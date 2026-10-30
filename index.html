@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1F3A5C">
+<meta name="description" content="Mõõdikute näidud telefoniga: skanni QR-kood, sisesta näit, ekspordi Excelisse.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Näiduring">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>Näiduring</title>
 <link rel="stylesheet" href="naiduring-fonts.css">
 <style>
@@ -298,7 +306,7 @@ function doneReading(m, now = new Date()){
 }
 
 /* ---------- anomaaliate kontroll ---------- */
-function history(m){
+function meterHistory(m){
   const rs = readingsOf(m.id); let sc = 0, sd = 0, n = 0;
   for (let i = rs.length - 1; i > 0 && n < 6; i--){
     const a = rs[i-1], b = rs[i]; if (b.replaced) break;
@@ -310,7 +318,7 @@ function history(m){
 }
 function expected(m, now = new Date()){
   const prev = lastReading(m.id); if (!prev) return null;
-  const h = history(m); if (h.avg == null || h.avg <= 0) return null;
+  const h = meterHistory(m); if (h.avg == null || h.avg <= 0) return null;
   const days = Math.max((now - new Date(prev.ts)) / 864e5, 0.25);
   const mid = prev.value + h.avg * days, spread = h.avg * days * 0.5;
   return {lo: prev.value + h.avg * days * 0.5, hi: mid + spread, mid};
@@ -327,7 +335,7 @@ function analyse(m, val, replaced, now = new Date()){
   }
   const cons = val - prev.value;
   const days = Math.max((now - new Date(prev.ts)) / 864e5, 0.25);
-  const h = history(m);
+  const h = meterHistory(m);
   if (cons === 0){ out.warns.push("Tarbimine on <b>null</b>: näit on sama mis eelmisel korral. Kas mõõdik töötab?"); return out; }
   if (h.avg != null && h.avg > 0){
     const ratio = (cons / days) / h.avg;
@@ -838,7 +846,8 @@ function vSettings(){
       <button class="btn" data-act="addType">${IC.plus} Lisa liik</button></div>
     <div class="card"><h3>Kasutusjuhend</h3>
       <a class="btn quiet" href="juhend.html">Ava kasutusjuhend</a>
-      <a class="btn quiet" href="juhend.pdf">Juhend PDF-ina</a></div>
+      <a class="btn quiet" href="juhend.pdf">Juhend PDF-ina</a>
+      <p class="muted small" style="margin:0">Näiduring 1.1.0 · Silent Tools</p></div>
     <div class="card"><h3>Parendusettepanekud</h3>
       <p style="margin:0" class="small">Kas midagi segab või on puudu? Kirjuta see üles.${S.ideas.length ? ` Salvestatud: <b>${S.ideas.length}</b>.` : ""}</p>
       <button class="btn" data-act="ideas">Ava ettepanekud</button></div>
@@ -894,7 +903,42 @@ function vPrint(){
 
 const TABS = [["round","Ringkäik","list"],["meters","Mõõdikud","meter"],["export","Eksport","out"],["settings","Seaded","gear"]];
 const TAB_OF = {round:"round", read:"round", saved:"round", unknown:"round", meters:"meters", detail:"meters", form:"meters", print:"meters", export:"export", settings:"settings", ideas:"settings"};
+/* ---------- ligipääsukood ---------- */
+const ACCESS_HASHES = ["8011c098125eef3e85cbe9ed4d5d7be62f8ff7a2ca043e861cf0f1847d5d9cfc"];
+const ACCESS_KEY = "naiduring.access";
+let LOCKED = true; try { LOCKED = !ACCESS_HASHES.includes(localStorage.getItem(ACCESS_KEY)); } catch(e){}
+const LOCK = {msg:"", busy:false};
+async function sha256hex(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""); }
+async function tryUnlock(raw){
+  const c = String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!c){ LOCK.msg = "Sisesta ligipääsukood."; render(); $("#lk")?.focus(); return; }
+  LOCK.busy = true; render();
+  let h = ""; try { h = await sha256hex(c); } catch(e){ LOCK.busy = false; LOCK.msg = "See brauser ei saa koodi kontrollida. Ava link Safaris või Chrome'is."; render(); return; }
+  LOCK.busy = false;
+  if (!ACCESS_HASHES.includes(h)){ LOCK.msg = "See kood ei sobi. Kontrolli koodi ja proovi uuesti. Tühikud ja sidekriipsud ei loe."; render(); $("#lk")?.focus(); return; }
+  try { localStorage.setItem(ACCESS_KEY, h); } catch(e){}
+  LOCKED = false; LOCK.msg = "";
+  if (!S.settings.reader){ S.view = "name"; render(); setTimeout(() => $("#nm")?.focus(), 50); }
+  else if (pendingHash){ const p = pendingHash; pendingHash = null; openById(p); }
+  else { S.view = "round"; render(); }
+}
+function vLock(){
+  return `<main class="wrap" style="padding-top:28px">
+    <div class="rhead"><span class="brand" style="color:var(--accent)">${IC.logo} Näiduring</span></div>
+    <form id="lockForm" class="field" autocomplete="off" style="gap:12px">
+      <label for="lk" style="font-size:1.5rem">Sisesta ligipääsukood</label>
+      <p class="muted" style="margin:0">Koodi saite tööriista tellimisel. Seda on vaja igas telefonis ainult üks kord.</p>
+      <input type="text" id="lk" class="num" autocapitalize="characters" spellcheck="false" placeholder="nt NAIDU-1234" style="font-size:1.4rem;min-height:68px">
+      ${LOCK.msg ? `<div class="note warn" role="alert"><span>${esc(LOCK.msg)}</span></div>` : ""}
+      <button class="btn primary huge" type="submit" ${LOCK.busy ? "disabled" : ""}>${LOCK.busy ? "Kontrollin…" : "Ava"}</button>
+    </form>
+    <p class="muted small" style="margin:0">Koodi pole? <a href="demo.html" style="color:var(--accent);font-weight:700">Proovi demot</a> või <a href="../business/#kontakt" style="color:var(--accent);font-weight:700">küsi pakkumist</a>.</p>
+  </main>`;
+}
+document.addEventListener("submit", e => { if (e.target.id === "lockForm"){ e.preventDefault(); tryUnlock($("#lk").value); } });
+
 function render(){
+  if (LOCKED){ $("#app").innerHTML = vLock(); return; }
   if (!S.settings.reader || S.view === "name"){ S.view = "name"; }
   const V = {name:vName, round:vRound, read:vRead, saved:vSaved, unknown:vUnknown, meters:vMeters, detail:vDetail, form:vForm, export:vExport, settings:vSettings, print:vPrint, ideas:vIdeas}[S.view] || vRound;
   const showTabs = !["name","read","form","print"].includes(S.view);
@@ -994,13 +1038,17 @@ function readHash(){
   if (m){ history.replaceState(null, "", location.pathname + location.search); return normId(m); }
   return null;
 }
-window.addEventListener("hashchange", () => { const h = readHash(); if (h){ if (S.settings.reader) openById(h); else pendingHash = h; } });
+window.addEventListener("hashchange", () => { const h = readHash(); if (h){ if (S.settings.reader && !LOCKED) openById(h); else pendingHash = h; } });
 (async () => {
   await load();
   const h = readHash();
-  if (!S.settings.reader){ S.view = "name"; pendingHash = h; render(); }
+  if (LOCKED){ pendingHash = h; render(); setTimeout(() => $("#lk")?.focus(), 50); }
+  else if (!S.settings.reader){ S.view = "name"; pendingHash = h; render(); }
   else if (h) openById(h);
   else render();
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
 })();
 </script>
 </body>

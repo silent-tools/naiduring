@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="et">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1F3A5C">
+<meta name="description" content="Proovi Näiduringi ilma koodita. Demos eksport puudub.">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Näiduring demo</title>
+<link rel="stylesheet" href="naiduring-fonts.css">
+<style>
+/* Paigutus: üks kitsas veerg (max 640px), suured puutealad, all fikseeritud vahekaardid. */
+:root{
+  --bg:#ECEEEA; --surface:#FFFFFF; --sunk:#F5F6F3; --ink:#18212C; --muted:#56606C; --line:#CDD3CC;
+  --accent:#1F3A5C; --accent-ink:#FFFFFF; --accent-soft:#DCE6F1;
+  --ok:#2C6E35; --ok-bg:#E0F0E1; --warn:#8A5200; --warn-bg:#FFEFCC; --warn-line:#E0A23A; --bad:#A8231B;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", Roboto, Arial, sans-serif;
+  --f-num:"Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --fs:18px; --r:12px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#11161C; --surface:#1A2129; --sunk:#151B22; --ink:#E9EDF0; --muted:#9DA7B1; --line:#2E3742;
+  --accent:#8DB8E8; --accent-ink:#0E1A27; --accent-soft:#22344A;
+  --ok:#7CC487; --ok-bg:#1C3322; --warn:#F2C26B; --warn-bg:#3A2C10; --warn-line:#9C7020; --bad:#F08A80;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#11161C; --surface:#1A2129; --sunk:#151B22; --ink:#E9EDF0; --muted:#9DA7B1; --line:#2E3742;
+  --accent:#8DB8E8; --accent-ink:#0E1A27; --accent-soft:#22344A;
+  --ok:#7CC487; --ok-bg:#1C3322; --warn:#F2C26B; --warn-bg:#3A2C10; --warn-line:#9C7020; --bad:#F08A80;
+  color-scheme:dark; }
+:root[data-size="xl"]{ --fs:22px; }
+html{font-size:var(--fs); -webkit-text-size-adjust:100%;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);line-height:1.4;
+  padding-top:env(safe-area-inset-top,0px);}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;line-height:1.15;text-wrap:balance}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
+main.wrap{padding-block:16px calc(110px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:18px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+
+/* ülariba */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--accent);color:var(--accent-ink)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--accent)}
+.topin{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px}
+.brand{font-weight:700;font-size:1.15rem;letter-spacing:.02em;display:flex;align-items:center;gap:10px}
+.brand svg{width:26px;height:26px}
+.who{background:transparent;border:2px solid currentColor;border-radius:999px;padding:6px 14px;min-height:44px;cursor:pointer;color:inherit;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* nupud */
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:58px;padding:10px 18px;border-radius:var(--r);border:2px solid var(--accent);background:var(--surface);color:var(--accent);font-weight:700;font-size:1.05rem;cursor:pointer;text-align:center;text-decoration:none;width:100%}
+.btn svg{width:1.4em;height:1.4em;flex:none}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.huge{min-height:76px;font-size:1.25rem}
+.btn.warnbtn{background:var(--warn-line);border-color:var(--warn-line);color:#1d1300}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn.armed{background:var(--bad);color:#fff;border-color:var(--bad)}
+.btn.quiet{border-color:var(--line);color:var(--ink)}
+.btn:focus-visible,.mrow:focus-visible,.chip:focus-visible,.opt:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--warn-line);outline-offset:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.row2.stack{grid-template-columns:1fr}}
+
+/* edenemine */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px}
+.prog-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.prog-num{font-size:1.7rem;font-weight:700}
+.prog-num span{font-size:1rem;font-weight:400;color:var(--muted)}
+.bar{height:14px;border-radius:7px;background:var(--sunk);border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok)}
+
+/* filtrid */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:48px;padding:8px 16px;border-radius:999px;border:2px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px}
+.chip .dot{width:12px;height:12px;border-radius:50%;background:var(--c)}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.search{width:100%;min-height:54px;border-radius:var(--r);border:2px solid var(--line);background:var(--surface);padding:10px 14px;font-size:1.05rem}
+
+/* loendid */
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sec-h h2{font-size:1.15rem}
+.list{display:flex;flex-direction:column;gap:8px}
+.mrow{display:grid;grid-template-columns:8px 1fr auto;align-items:stretch;gap:0;min-height:76px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left;padding:0;overflow:hidden;width:100%}
+.mrow .stripe{background:var(--c)}
+.mrow .mmain{padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+.mid{font-family:var(--f-num);font-weight:700;font-size:1.15rem}
+.mname{font-weight:700;overflow-wrap:anywhere}
+.mloc{color:var(--muted);font-size:.85rem;overflow-wrap:anywhere}
+.mside{display:flex;align-items:center;padding-right:12px}
+.pill{border-radius:999px;padding:5px 12px;font-weight:700;font-size:.85rem;white-space:nowrap}
+.pill.due{background:var(--accent-soft);color:var(--accent)}
+.pill.done{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.none{background:var(--sunk);color:var(--muted)}
+.toggle{background:none;border:none;color:var(--accent);font-weight:700;min-height:48px;cursor:pointer;text-align:left;padding:0}
+.empty{background:var(--surface);border:2px dashed var(--line);border-radius:var(--r);padding:22px 18px;display:flex;flex-direction:column;gap:14px}
+.empty h2{font-size:1.3rem}
+
+/* näidu sisestus */
+.rhead{display:flex;flex-direction:column;gap:6px}
+.tag{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;font-weight:700;border-radius:999px;padding:4px 12px;background:var(--sunk);border:2px solid var(--c)}
+.tag i{width:12px;height:12px;border-radius:50%;background:var(--c)}
+.rhead h1{font-family:var(--f-num);font-size:2.2rem}
+.rhead p{margin:0;font-size:1.1rem;font-weight:700}
+.prev{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.lbl{color:var(--muted);font-size:.9rem}
+.odo{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.odo b{font-family:var(--f-num);font-size:2rem;letter-spacing:.03em;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:2px 10px}
+.expect{font-weight:700;color:var(--ok)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>label,.flabel{font-weight:700;font-size:1.05rem}
+.field input[type=text],.field input[type=date],.field textarea,.field select{min-height:58px;border-radius:var(--r);border:2px solid var(--line);background:var(--surface);padding:10px 14px;font-size:1.1rem;width:100%}
+.field textarea{min-height:90px;resize:vertical}
+.rin{font-family:var(--f-num)!important;font-size:2.6rem!important;font-weight:700;text-align:right;min-height:88px!important;border-width:3px!important;border-color:var(--accent)!important;letter-spacing:.03em}
+.check{display:flex;align-items:center;gap:14px;min-height:58px;padding:8px 14px;border:2px solid var(--line);border-radius:var(--r);background:var(--surface);cursor:pointer;font-weight:700}
+.check input{width:28px;height:28px;flex:none;accent-color:var(--accent)}
+.note{border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:1.05rem}
+.note.warn{background:var(--warn-bg);border:3px solid var(--warn-line);color:var(--ink)}
+.note.warn b{color:var(--warn)}
+.note.info{background:var(--ok-bg);border:1px solid var(--ok);color:var(--ink)}
+.photo-prev{display:flex;gap:12px;align-items:center}
+.photo-prev img{width:110px;height:110px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.opt{min-height:58px;border-radius:var(--r);border:2px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px}
+.opt .dot{width:14px;height:14px;border-radius:50%;background:var(--c)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+
+/* detail */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:700;overflow-wrap:anywhere}
+.qrbox{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.qrbox svg,.qrbox .qrimg{width:150px;height:150px;background:#fff;border-radius:8px;padding:4px}
+.qrbox .url{font-size:.8rem;color:var(--muted);overflow-wrap:anywhere;min-width:0;flex:1}
+.hist{overflow-x:auto}
+.hist table{border-collapse:collapse;width:100%;min-width:440px}
+.hist th,.hist td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.hist td.n{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hist th{font-size:.85rem;color:var(--muted)}
+.linkbtn{background:none;border:none;color:var(--accent);font-weight:700;cursor:pointer;padding:6px 0;min-height:40px}
+.linkbtn.del{color:var(--bad)}
+.linkbtn.armed{background:var(--bad);color:#fff;border-radius:6px;padding:6px 8px}
+
+/* salvestatud */
+.done-big{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:24px 8px}
+.done-big svg{width:96px;height:96px;color:var(--ok)}
+.done-big h1{font-size:1.6rem}
+
+/* vahekaardid */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.tab{background:none;border:none;min-height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:700;font-size:.82rem;color:var(--muted);cursor:pointer;border-top:4px solid transparent}
+.tab svg{width:26px;height:26px}
+.tab[aria-current="page"]{color:var(--accent);border-top-color:var(--accent)}
+
+.demo{background:var(--warn-line);color:#1d1300;font-weight:700;font-size:.85rem;text-align:center;padding-block:6px;letter-spacing:.03em}
+.demo a{color:#1d1300}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:12px;font-weight:700;max-width:min(92vw,560px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+
+/* skanner */
+.scan{position:fixed;inset:0;z-index:50;background:#000;color:#fff;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));gap:12px}
+.scan video{flex:1;min-height:0;width:100%;object-fit:cover;border-radius:12px;background:#111}
+.scan .vf{position:relative;flex:1;min-height:0;display:flex}
+.scan .vf::after{content:"";position:absolute;inset:18% 14%;border:4px solid #F2C26B;border-radius:18px;pointer-events:none}
+.scan p{margin:0;font-size:1.1rem;font-weight:700;text-align:center}
+.scan .manual{display:flex;gap:8px}
+.scan .manual input{flex:1;min-width:0;min-height:58px;border-radius:12px;border:2px solid #555;background:#1a1a1a;color:#fff;padding:8px 14px;font-size:1.2rem;font-family:var(--f-num)}
+.scan .manual button{min-width:90px;border-radius:12px;border:none;background:#F2C26B;color:#1d1300;font-weight:700;font-size:1.05rem}
+.scan .close{background:#fff;color:#000;border:none;border-radius:12px;min-height:58px;font-weight:700;font-size:1.1rem}
+
+/* sildid */
+.labels{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.lab{background:#fff;color:#000;border:1px dashed #888;border-radius:8px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;break-inside:avoid}
+.lab svg,.lab .qrimg{width:120px;height:120px}
+.lab .lid{font-family:var(--f-num);font-weight:700;font-size:1.3rem}
+.lab .lnm{font-size:.8rem;overflow-wrap:anywhere}
+.lab .ltp{font-size:.75rem;font-weight:700;border-top:4px solid var(--c);padding-top:2px;width:100%}
+.noqr{font-size:.8rem;color:var(--bad)}
+@media print{
+  @page{margin:8mm}
+  body{background:#fff;padding:0}
+  body::before,.top,.tabs,.noprint,.toast{display:none!important}
+  main.wrap{padding:0;max-width:none}
+  .labels{grid-template-columns:repeat(4,1fr);gap:4mm}
+  .lab{border:1px dashed #999}
+}
+@media (prefers-reduced-motion:no-preference){ .bar i{transition:width .4s ease} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="layer"></div>
+
+<script src="qrcode.js"></script>
+<script src="jsQR.js"></script>
+<script>
+"use strict";
+/* ---------- abi ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2, "0");
+const fmt = n => (n == null || isNaN(n)) ? "" : Number(n).toLocaleString("et-EE", {maximumFractionDigits: 3});
+const dStr = d => { d = new Date(d); return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`; };
+const tStr = d => { d = new Date(d); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const isoDay = d => { d = new Date(d); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const normId = s => String(s || "").trim().toUpperCase().replace(/\s+/g, "-");
+const parseNum = s => { s = String(s ?? "").replace(/\s/g, "").replace(",", "."); if (s === "" || isNaN(s)) return null; return Number(s); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const safeName = s => String(s || "lugeja").trim().replace(/[^\p{L}\p{N}_-]+/gu, "_").replace(/^_+|_+$/g, "") || "lugeja";
+const MONTHS = ["jaanuar","veebruar","märts","aprill","mai","juuni","juuli","august","september","oktoober","november","detsember"];
+
+const IC = {
+  logo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-4M9 2h6"/></svg>',
+  qr:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>',
+  cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="4"/></svg>',
+  list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M3 6l1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></svg>',
+  meter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10v4H7z"/></svg>',
+  out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/></svg>',
+  ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.5 3.5L17 9"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>',
+  print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H3v-8h18v8h-3M6 14h12v7H6z"/></svg>'
+};
+
+const TYPES_DEFAULT = [
+  {key:"elekter", name:"Elekter", unit:"kWh", color:"#C98A00"},
+  {key:"vesi",    name:"Vesi",    unit:"m³",  color:"#1E73BE"},
+  {key:"soojus",  name:"Soojus",  unit:"MWh", color:"#C0462B"},
+  {key:"gaas",    name:"Gaas",    unit:"m³",  color:"#2E8B6E"},
+  {key:"muu",     name:"Muu",     unit:"",    color:"#6B5FA8"}
+];
+const EXTRA_COLORS = ["#8C6D1F","#5A7D2B","#A04A7A","#3E6E8C","#7A5236","#4B4FA8"];
+const FREQ = {month:"Igakuine", quarter:"Kvartaalne", week:"Iganädalane", year:"Aastane", none:"Graafikuta"};
+const FREQ_SHORT = {month:"kuu", quarter:"kvartal", week:"nädal", year:"aasta"};
+
+/* ---------- andmebaas (IndexedDB, andmed jäävad seadmesse) ---------- */
+const DB = {
+  db:null,
+  open(){ return new Promise((res, rej) => {
+    const r = indexedDB.open("naiduring-demo", 2);
+    r.onupgradeneeded = () => { const d = r.result; const has = n => d.objectStoreNames.contains(n);
+      if (!has("meters")) d.createObjectStore("meters", {keyPath:"id"});
+      if (!has("readings")) d.createObjectStore("readings", {keyPath:"rid"});
+      if (!has("photos")) d.createObjectStore("photos");
+      if (!has("kv")) d.createObjectStore("kv");
+      if (!has("ideas")) d.createObjectStore("ideas", {keyPath:"iid"}); };
+    r.onsuccess = () => { this.db = r.result; res(); };
+    r.onerror = () => rej(r.error);
+  });},
+  tx(store, mode, fn){ return new Promise((res, rej) => {
+    const t = this.db.transaction(store, mode); const s = t.objectStore(store);
+    const out = fn(s); t.oncomplete = () => res(out && out.result !== undefined ? out.result : undefined); t.onerror = () => rej(t.error);
+  });},
+  all(store){ return this.tx(store, "readonly", s => s.getAll()); },
+  get(store, key){ return this.tx(store, "readonly", s => s.get(key)); },
+  put(store, val, key){ return this.tx(store, "readwrite", s => key === undefined ? s.put(val) : s.put(val, key)); },
+  del(store, key){ return this.tx(store, "readwrite", s => s.delete(key)); },
+  clear(store){ return this.tx(store, "readwrite", s => s.clear()); }
+};
+
+/* ---------- olek ---------- */
+const S = {
+  meters:[], readings:[],
+  settings:{reader:"", size:"l", types:TYPES_DEFAULT.slice()},
+  view:"round", filter:"all", q:"", showDone:false,
+  cur:null, draft:null, form:null, formFrom:null, unknownId:null, lastSaved:null,
+  exp:{range:"all", from:"", to:"", latest:true},
+  print:{mode:"meters", prefix:"M-", start:1, count:24},
+  armed:null, dbOk:true,
+  ideas:[], idea:{kind:"idea", text:""}
+};
+let armTimer = null;
+function arm(key){ S.armed = key; clearTimeout(armTimer); armTimer = setTimeout(() => { S.armed = null; render(); }, 4000); }
+function isArmed(key){ if (S.armed === key){ S.armed = null; clearTimeout(armTimer); return true; } arm(key); render(); return false; }
+
+const typeOf = key => S.settings.types.find(t => t.key === key) || {key, name:key, unit:"", color:"#777"};
+const meter = id => S.meters.find(m => m.id === id);
+const unitOf = m => m.unit || typeOf(m.type).unit || "";
+function readingsOf(id){ return S.readings.filter(r => r.meterId === id).sort((a, b) => a.ts < b.ts ? -1 : 1); }
+const lastReading = id => { const r = readingsOf(id); return r[r.length - 1] || null; };
+
+function isoWeek(d){ const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return t.getUTCFullYear() + "-N" + pad(Math.ceil(((t - y0) / 864e5 + 1) / 7)); }
+function periodKey(d, f){ d = new Date(d); const y = d.getFullYear(), m = d.getMonth();
+  if (f === "month") return `${y}-${pad(m+1)}`;
+  if (f === "quarter") return `${y}-K${Math.floor(m/3)+1}`;
+  if (f === "year") return `${y}`;
+  if (f === "week") return isoWeek(d);
+  return null; }
+function doneReading(m, now = new Date()){
+  if (m.freq === "none") return null;
+  const k = periodKey(now, m.freq);
+  const rs = readingsOf(m.id).filter(r => periodKey(r.ts, m.freq) === k);
+  return rs[rs.length - 1] || null;
+}
+
+/* ---------- anomaaliate kontroll ---------- */
+function meterHistory(m){
+  const rs = readingsOf(m.id); let sc = 0, sd = 0, n = 0;
+  for (let i = rs.length - 1; i > 0 && n < 6; i--){
+    const a = rs[i-1], b = rs[i]; if (b.replaced) break;
+    const d = (new Date(b.ts) - new Date(a.ts)) / 864e5;
+    if (d <= 0.01 || b.value < a.value) continue;
+    sc += b.value - a.value; sd += d; n++;
+  }
+  return {avg: (n > 0 && sd > 0) ? sc / sd : null, n};
+}
+function expected(m, now = new Date()){
+  const prev = lastReading(m.id); if (!prev) return null;
+  const h = meterHistory(m); if (h.avg == null || h.avg <= 0) return null;
+  const days = Math.max((now - new Date(prev.ts)) / 864e5, 0.25);
+  const mid = prev.value + h.avg * days, spread = h.avg * days * 0.5;
+  return {lo: prev.value + h.avg * days * 0.5, hi: mid + spread, mid};
+}
+function analyse(m, val, replaced, now = new Date()){
+  const out = {warns:[], info:[]}; const u = unitOf(m);
+  const prev = lastReading(m.id);
+  if (val == null) return out;
+  if (!prev){ out.info.push("Esimene näit. Sellest saab järgmiste näitude võrdluse alus."); return out; }
+  if (replaced){ out.info.push("Märgitud: mõõdik vahetati või läks nulli. Selle näiduga tarbimist ei arvutata."); return out; }
+  if (val < prev.value){
+    out.warns.push(`Näit on <b>väiksem</b> kui eelmine (${fmt(prev.value)} ${u}). Kontrolli numbrit. Kui mõõdik vahetati või läks nulli, tee allpool linnuke.`);
+    return out;
+  }
+  const cons = val - prev.value;
+  const days = Math.max((now - new Date(prev.ts)) / 864e5, 0.25);
+  const h = meterHistory(m);
+  if (cons === 0){ out.warns.push("Tarbimine on <b>null</b>: näit on sama mis eelmisel korral. Kas mõõdik töötab?"); return out; }
+  if (h.avg != null && h.avg > 0){
+    const ratio = (cons / days) / h.avg;
+    if (ratio >= 2) out.warns.push(`Tarbimine on <b>${ratio.toFixed(1).replace(".", ",")} korda suurem</b> kui tavaliselt. Kontrolli numbrit.`);
+    else if (ratio <= 0.4) out.warns.push(`Tarbimine on tavalisest <b>${Math.round((1 - ratio) * 100)}% väiksem</b>. Kontrolli numbrit.`);
+    else out.info.push(`Tarbimine ${fmt(cons)} ${u}. See on tavapärases vahemikus.`);
+  } else out.info.push(`Tarbimine eelmisest näidust: ${fmt(cons)} ${u}.`);
+  return out;
+}
+
+/* ---------- salvestus ---------- */
+async function saveSettings(){ try { await DB.put("kv", S.settings, "settings"); } catch(e){} applySize(); }
+function applySize(){ document.documentElement.dataset.size = S.settings.size === "xl" ? "xl" : "l"; }
+async function load(){
+  try {
+    await DB.open();
+    S.meters = await DB.all("meters") || [];
+    S.readings = await DB.all("readings") || [];
+    S.ideas = await DB.all("ideas") || [];
+    const st = await DB.get("kv", "settings");
+    if (st) S.settings = Object.assign(S.settings, st);
+  } catch(e){ S.dbOk = false; }
+  applySize();
+}
+
+let toastTimer = null;
+function toast(msg){ const l = $("#layer"); l.querySelector(".toast")?.remove();
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg; l.appendChild(t);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 3200); }
+
+function download(blob, name){ const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 3000); }
+
+/* ---------- QR ---------- */
+function qrText(id){
+  const base = location.href.split("#")[0];
+  return /^https?:/.test(location.protocol) ? `${base}#m=${encodeURIComponent(id)}` : id;
+}
+function qrSvg(text){
+  if (typeof qrcode === "undefined") return '<div class="noqr">QR-koodi loomiseks on vaja internetti.</div>';
+  if (qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs["UTF-8"]) qrcode.stringToBytes = qrcode.stringToBytesFuncs["UTF-8"];
+  const q = qrcode(0, "M"); q.addData(text); q.make();
+  return q.createSvgTag({cellSize:4, margin:2, scalable:true});
+}
+function codeToId(t){
+  t = String(t || "").trim();
+  try { const u = new URL(t); const p = new URLSearchParams(u.hash.slice(1)); if (p.get("m")) return normId(p.get("m")); } catch(e){}
+  return normId(t);
+}
+function openById(id){
+  id = normId(id); if (!id) return;
+  if (meter(id)) startReading(id);
+  else { S.unknownId = id; S.view = "unknown"; render(); }
+}
+
+/* ---------- skanner ---------- */
+let scanStream = null, scanRun = false;
+async function openScanner(){
+  const l = $("#layer");
+  l.insertAdjacentHTML("beforeend", `<div class="scan" id="scan" role="dialog" aria-label="QR-koodi skanner">
+    <p id="scanMsg">Suuna kaamera mõõdiku QR-koodile</p>
+    <div class="vf"><video id="scanV" playsinline muted></video></div>
+    <form class="manual" id="scanForm"><input id="scanIn" placeholder="või kirjuta mõõdiku nr" autocomplete="off" autocapitalize="characters"><button type="submit">Ava</button></form>
+    <button class="close" data-act="scanClose">Sulge</button></div>`);
+  $("#scanForm").addEventListener("submit", e => { e.preventDefault(); const v = $("#scanIn").value; if (v.trim()){ closeScanner(); openById(v); } });
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}, audio:false});
+    const v = $("#scanV"); v.srcObject = scanStream; await v.play();
+    scanRun = true;
+    const det = ("BarcodeDetector" in window) ? new BarcodeDetector({formats:["qr_code"]}) : null;
+    const cv = document.createElement("canvas"); const cx = cv.getContext("2d", {willReadFrequently:true});
+    const tick = async () => {
+      if (!scanRun) return;
+      try {
+        let txt = null;
+        if (v.readyState >= 2){
+          if (det){ const r = await det.detect(v); if (r.length) txt = r[0].rawValue; }
+          else if (typeof jsQR !== "undefined"){
+            const w = 480, h = Math.round(480 * v.videoHeight / v.videoWidth) || 360;
+            cv.width = w; cv.height = h; cx.drawImage(v, 0, 0, w, h);
+            const r = jsQR(cx.getImageData(0, 0, w, h).data, w, h, {inversionAttempts:"dontInvert"}); if (r) txt = r.data;
+          }
+        }
+        if (txt){ if (navigator.vibrate) navigator.vibrate(80); closeScanner(); openById(codeToId(txt)); return; }
+      } catch(e){}
+      setTimeout(() => requestAnimationFrame(tick), 120);
+    };
+    tick();
+  } catch(e){
+    const m = $("#scanMsg"); if (m) m.textContent = "Kaamerat ei saanud avada. Kirjuta mõõdiku number käsitsi.";
+    $("#scanIn")?.focus();
+  }
+}
+function closeScanner(){ scanRun = false; if (scanStream){ scanStream.getTracks().forEach(t => t.stop()); scanStream = null; } $("#scan")?.remove(); }
+
+/* ---------- foto ---------- */
+function compress(file){ return new Promise((res, rej) => {
+  const img = new Image(); const url = URL.createObjectURL(file);
+  img.onload = () => { const max = 1400; let {width:w, height:h} = img; const k = Math.min(1, max / Math.max(w, h));
+    w = Math.round(w * k); h = Math.round(h * k); const c = document.createElement("canvas"); c.width = w; c.height = h;
+    c.getContext("2d").drawImage(img, 0, 0, w, h); URL.revokeObjectURL(url); c.toBlob(b => b ? res(b) : rej(), "image/jpeg", 0.72); };
+  img.onerror = () => { URL.revokeObjectURL(url); rej(); }; img.src = url;
+});}
+
+/* ---------- toimingud ---------- */
+function startReading(id){
+  S.cur = id; if (S.draft?.photoUrl) URL.revokeObjectURL(S.draft.photoUrl);
+  S.draft = {value:"", comment:"", replaced:false, photoBlob:null, photoUrl:null, confirm:false};
+  S.view = "read"; render(); window.scrollTo(0, 0);
+}
+async function saveReading(){
+  const m = meter(S.cur), d = S.draft; const val = parseNum(d.value);
+  if (val == null){ toast("Sisesta näit numbrina"); $("#rv")?.focus(); return; }
+  const a = analyse(m, val, d.replaced);
+  if (a.warns.length && !d.confirm){ d.confirm = true; render(); $("#analysis")?.scrollIntoView({block:"center"}); return; }
+  const r = {rid:uid(), meterId:m.id, ts:new Date().toISOString(), value:val, reader:S.settings.reader,
+    comment:(d.comment || "").trim(), warn:a.warns.map(w => w.replace(/<[^>]+>/g, "")).join(" "), replaced:!!d.replaced, photo:!!d.photoBlob};
+  try { await DB.put("readings", r); if (d.photoBlob) await DB.put("photos", d.photoBlob, r.rid); }
+  catch(e){ toast("Salvestamine ebaõnnestus. Proovi uuesti."); return; }
+  S.readings.push(r); if (d.photoUrl) URL.revokeObjectURL(d.photoUrl);
+  S.draft = null; S.lastSaved = r; S.view = "saved"; render(); window.scrollTo(0, 0);
+}
+function newMeterForm(id = ""){
+  S.form = {isNew:true, id, name:"", location:"", type:"elekter", unit:typeOf("elekter").unit, freq:"month", start:"", note:""};
+}
+async function saveMeter(){
+  const f = S.form; const id = normId(f.id);
+  if (!id){ toast("Mõõdiku number või tähis on kohustuslik"); return; }
+  if (!f.name.trim()){ toast("Lisa mõõdikule nimetus"); return; }
+  if (f.isNew && S.meters.length >= DEMO_MAX){ toast(`Demos saab lisada kuni ${DEMO_MAX} mõõdikut`); return; }
+  if (f.isNew && meter(id)){ toast(`Mõõdik ${id} on juba olemas`); return; }
+  const start = parseNum(f.start);
+  if (f.isNew && String(f.start).trim() && start == null){ toast("Algnäit peab olema number"); return; }
+  const old = meter(id) || {};
+  const m = {id, name:f.name.trim(), location:f.location.trim(), type:f.type, unit:f.unit.trim(), freq:f.freq, note:f.note.trim(),
+    created: old.created || new Date().toISOString(), sample: old.sample || false};
+  await DB.put("meters", m);
+  S.meters = S.meters.filter(x => x.id !== id).concat(m);
+  if (f.isNew && start != null){
+    const r = {rid:uid(), meterId:id, ts:new Date().toISOString(), value:start, reader:S.settings.reader, comment:"Algnäit registreerimisel", warn:"", replaced:false, photo:false};
+    await DB.put("readings", r); S.readings.push(r);
+  }
+  const from = S.formFrom; S.form = null; S.formFrom = null;
+  toast(f.isNew ? `Mõõdik ${id} lisatud` : "Muudatused salvestatud");
+  if (f.isNew && from === "scan" && start == null) startReading(id);
+  else { S.cur = id; S.view = "detail"; render(); }
+}
+async function deleteMeter(id){
+  const rs = readingsOf(id);
+  for (const r of rs){ await DB.del("readings", r.rid); if (r.photo) await DB.del("photos", r.rid); }
+  await DB.del("meters", id);
+  S.readings = S.readings.filter(r => r.meterId !== id); S.meters = S.meters.filter(m => m.id !== id);
+  S.view = "meters"; toast(`Mõõdik ${id} kustutatud`); render();
+}
+async function deleteReading(rid){
+  const r = S.readings.find(x => x.rid === rid); if (!r) return;
+  await DB.del("readings", rid); if (r.photo) await DB.del("photos", rid);
+  S.readings = S.readings.filter(x => x.rid !== rid); toast("Näit kustutatud"); render();
+}
+
+/* ---------- eksport ---------- */
+function rangeOf(){
+  const now = new Date(); const e = S.exp;
+  if (e.range === "today"){ const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()); return [a, new Date(+a + 864e5)]; }
+  if (e.range === "month") return [new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getFullYear(), now.getMonth() + 1, 1)];
+  if (e.range === "prev") return [new Date(now.getFullYear(), now.getMonth() - 1, 1), new Date(now.getFullYear(), now.getMonth(), 1)];
+  if (e.range === "custom"){ const a = e.from ? new Date(e.from + "T00:00") : new Date(2000, 0, 1); const b = e.to ? new Date(+new Date(e.to + "T00:00") + 864e5) : new Date(2999, 0, 1); return [a, b]; }
+  return [new Date(2000, 0, 1), new Date(2999, 0, 1)];
+}
+function photoName(r){ return `${isoDay(r.ts)}_${r.meterId}_${r.rid}.jpg`.replace(/[^\w.-]+/g, "_"); }
+/* Periood: graafikuga mõõdikul sageduse järgi, graafikuta mõõdikul päev */
+const periodOf = (m, ts) => m.freq === "none" ? isoDay(ts) : periodKey(ts, m.freq);
+function exportRows(){
+  const [a, b] = rangeOf(); const rows = []; let dropped = 0;
+  for (const m of S.meters){
+    const all = readingsOf(m.id); const t = typeOf(m.type);
+    let rs = all;
+    if (S.exp.latest){
+      /* sama mõõdiku sama perioodi kohta jääb alles ainult kõige hilisem näit */
+      const last = new Map(); all.forEach(r => last.set(periodOf(m, r.ts), r));
+      const keep = new Set([...last.values()].map(r => r.rid));
+      rs = all.filter(r => keep.has(r.rid));
+      dropped += all.filter(r => !keep.has(r.rid) && new Date(r.ts) >= a && new Date(r.ts) < b).length;
+    }
+    rs.forEach((r, i) => {
+      const d = new Date(r.ts); if (d < a || d >= b) return;
+      const p = i > 0 ? rs[i-1] : null;
+      /* kui välja jäetud näitude hulgas oli mõõdiku vahetus, ei saa tarbimist arvutada */
+      const repl = r.replaced || (p && all.some(x => x.replaced && x.ts > p.ts && x.ts <= r.ts));
+      rows.push({_r:r, "Kuupäev":new Date(d.getFullYear(), d.getMonth(), d.getDate()), "Kellaaeg":tStr(d), "Periood":periodOf(m, r.ts), "Lugeja":r.reader || "",
+        "Mõõdiku ID":m.id, "Nimetus":m.name, "Asukoht":m.location || "", "Liik":t.name, "Ühik":unitOf(m),
+        "Näit":r.value, "Eelmine näit":p ? p.value : "", "Eelmise kuupäev":p ? dStr(p.ts) : "",
+        "Tarbimine":(p && !repl) ? Math.round((r.value - p.value) * 1000) / 1000 : "",
+        "Mõõdik vahetatud":repl ? "jah" : "", "Hoiatus":r.warn || "", "Kommentaar":r.comment || "", "Foto":r.photo ? photoName(r) : ""});
+    });
+  }
+  rows.sort((x, y) => x._r.ts < y._r.ts ? -1 : 1);
+  rows.dropped = dropped;
+  return rows;
+}
+const today = () => isoDay(new Date());
+const fileBase = () => `Naidud_${safeName(S.settings.reader)}_${today()}`;
+const DEMO_MSG = "Demos see funktsioon puudub. Täisversioonis saad andmed Excelisse.";
+const DEMO_MAX = 10;
+
+/* ---------- parendusettepanekud ---------- */
+const IDEA_KINDS = {idea:"Ettepanek", bug:"Viga", question:"Küsimus"};
+const ideasSorted = () => S.ideas.slice().sort((a, b) => a.ts < b.ts ? 1 : -1);
+async function saveIdea(){
+  const t = (S.idea.text || "").trim(); if (!t){ toast("Kirjuta ettepanek enne salvestamist"); $("#i-text")?.focus(); return; }
+  const x = {iid:uid(), ts:new Date().toISOString(), author:S.settings.reader, kind:S.idea.kind, text:t};
+  try { await DB.put("ideas", x); } catch(e){ toast("Salvestamine ebaõnnestus"); return; }
+  S.ideas.push(x); S.idea = {kind:S.idea.kind, text:""}; toast("Ettepanek salvestatud. Aitäh!"); render();
+}
+async function deleteIdea(iid){ await DB.del("ideas", iid); S.ideas = S.ideas.filter(x => x.iid !== iid); toast("Ettepanek kustutatud"); render(); }
+function ideasExcel(){ toast(DEMO_MSG); }
+async function ideasCopy(){
+  const txt = ideasSorted().map(x => `${dStr(x.ts)} · ${x.author || ""} · ${IDEA_KINDS[x.kind] || x.kind}\n${x.text}`).join("\n\n");
+  if (!txt){ toast("Ettepanekuid veel pole"); return; }
+  try { await navigator.clipboard.writeText(txt); toast("Kopeeritud. Kleebi e-kirja või sõnumisse."); }
+  catch(e){ const ta = $("#i-all"); if (ta){ ta.hidden = false; ta.value = txt; ta.select(); } toast("Vali tekst ja kopeeri käsitsi"); }
+}
+
+/* ---------- näidisandmed ---------- */
+async function loadSample(){
+  const defs = [
+    ["E-001","Peakilp","Tootmishoone A, elektriruum","elekter","month",420],
+    ["E-002","Kompressorijaam","Tootmishoone A, kelder","elekter","month",180],
+    ["E-003","Lao valgustus","Laohoone B","elekter","quarter",35],
+    ["V-001","Veesisend","Pumbamaja","vesi","month",6.5],
+    ["V-002","Pesuliin","Tootmishoone A","vesi","month",1.2],
+    ["S-001","Soojussõlm","Kontorihoone, kelder","soojus","month",0.35],
+    ["S-002","Soojussõlm","Tootmishoone A","soojus","month",0.9],
+    ["G-001","Katlamaja","Katlamaja","gaas","quarter",55]];
+  const now = new Date(); let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  for (const [id, name, loc, type, freq, rate] of defs){
+    if (meter(id)) continue;
+    const m = {id, name, location:loc, type, unit:typeOf(type).unit, freq, note:"", created:new Date().toISOString(), sample:true};
+    await DB.put("meters", m); S.meters.push(m);
+    let v = Math.round(rate * 900 * (0.8 + rnd() * 0.4) * 10) / 10; let prevD = null;
+    const step = freq === "quarter" ? 3 : 1;
+    for (let k = 6; k >= 1; k -= step){
+      const d = new Date(now.getFullYear(), now.getMonth() - k, 24 + Math.floor(rnd() * 4), 9 + Math.floor(rnd() * 5), Math.floor(rnd() * 60));
+      if (prevD) v = Math.round((v + rate * ((d - prevD) / 864e5) * (0.85 + rnd() * 0.3)) * 1000) / 1000;
+      prevD = d;
+      const r = {rid:uid(), meterId:id, ts:d.toISOString(), value:v, reader:"Näidis", comment:"", warn:"", replaced:false, photo:false};
+      await DB.put("readings", r); S.readings.push(r);
+    }
+    if (["E-002","V-001"].includes(id) && now.getDate() > 1){
+      const d = new Date(now.getFullYear(), now.getMonth(), Math.max(1, now.getDate() - 1), 10, 15);
+      v = Math.round((v + rate * ((d - prevD) / 864e5)) * 1000) / 1000;
+      const r = {rid:uid(), meterId:id, ts:d.toISOString(), value:v, reader:"Näidis", comment:"", warn:"", replaced:false, photo:false};
+      await DB.put("readings", r); S.readings.push(r);
+    }
+  }
+  toast("Näidisandmed laetud"); S.view = "round"; render();
+}
+async function removeSample(){ for (const m of S.meters.filter(x => x.sample)){ for (const r of readingsOf(m.id)) await DB.del("readings", r.rid); await DB.del("meters", m.id); }
+  const ids = new Set(S.meters.filter(x => x.sample).map(x => x.id));
+  S.readings = S.readings.filter(r => !ids.has(r.meterId)); S.meters = S.meters.filter(m => !m.sample); toast("Näidisandmed eemaldatud"); render(); }
+async function wipeAll(){ for (const s of ["meters","readings","photos","ideas"]) await DB.clear(s); S.meters = []; S.readings = []; S.ideas = []; toast("Kõik andmed kustutatud"); S.view = "round"; render(); }
+
+/* ---------- vaated ---------- */
+function filtered(){
+  const q = S.q.trim().toLowerCase();
+  return S.meters.filter(m => (S.filter === "all" || m.type === S.filter) &&
+    (!q || [m.id, m.name, m.location].join(" ").toLowerCase().includes(q)))
+    .sort((a, b) => a.id < b.id ? -1 : 1);
+}
+function chipsHtml(){
+  const used = S.settings.types.filter(t => S.meters.some(m => m.type === t.key));
+  if (used.length < 2) return "";
+  return `<div class="chips" role="group" aria-label="Liik">
+    <button class="chip" data-act="filter" data-v="all" aria-pressed="${S.filter === "all"}">Kõik <span class="muted">${S.meters.length}</span></button>
+    ${used.map(t => `<button class="chip" data-act="filter" data-v="${esc(t.key)}" aria-pressed="${S.filter === t.key}" style="--c:${t.color}"><span class="dot"></span>${esc(t.name)} <span class="muted">${S.meters.filter(m => m.type === t.key).length}</span></button>`).join("")}
+  </div>`;
+}
+function mrow(m, side){
+  const t = typeOf(m.type);
+  return `<button class="mrow" data-act="${S.view === "meters" ? "detail" : "read"}" data-id="${esc(m.id)}" style="--c:${t.color}">
+    <span class="stripe"></span>
+    <span class="mmain"><span class="mid">${esc(m.id)}</span><span class="mname">${esc(m.name)}</span>
+      <span class="mloc">${esc(t.name)}${m.location ? " · " + esc(m.location) : ""}</span></span>
+    <span class="mside">${side}</span></button>`;
+}
+function vName(){
+  return `<main class="wrap" style="padding-top:28px">
+    <div class="rhead"><span class="brand" style="color:var(--accent)">${IC.logo} Näiduring</span></div>
+    <div class="field"><label for="nm" style="font-size:1.5rem">Kes täna näite loeb?</label>
+      <input type="text" id="nm" data-bind="nameDraft" value="${esc(S.nameDraft ?? S.settings.reader)}" placeholder="Ees- ja perekonnanimi" autocomplete="name" style="font-size:1.4rem;min-height:68px"></div>
+    <p class="muted" style="margin:0">Nimi läheb iga näidu juurde ja ekspordifaili nimesse, nii saab eri lugejate failidel vahet teha.</p>
+    <button class="btn primary huge" data-act="setName">${S.settings.reader ? "Salvesta nimi" : "Alusta"}</button>
+    ${S.settings.reader ? `<button class="btn quiet" data-act="tab" data-v="round">Tühista</button>` : ""}
+  </main>`;
+}
+function vRound(){
+  if (!S.meters.length) return `<main class="wrap">
+    <div class="empty"><h2>Mõõdikuid veel pole</h2>
+      <p style="margin:0">Esimesel ringil registreeri iga mõõdik: anna talle number, nimetus, liik ja lugemise sagedus. Kui mõõdikul on QR-kleebis, skanni see ja tööriist pakub kohe registreerimist.</p>
+      <button class="btn primary huge" data-act="addMeter">${IC.plus} Lisa esimene mõõdik</button>
+      <button class="btn" data-act="scan">${IC.qr} Skanni QR-kleebis</button>
+      <button class="btn quiet" data-act="sample">Proovi näidisandmetega</button></div></main>`;
+  const now = new Date(); const list = filtered();
+  const sched = list.filter(m => m.freq !== "none");
+  const done = sched.filter(m => doneReading(m, now)), due = sched.filter(m => !doneReading(m, now));
+  const none = list.filter(m => m.freq === "none");
+  const pct = sched.length ? Math.round(done.length / sched.length * 100) : 0;
+  return `<main class="wrap">
+    <section class="hero">
+      <div class="prog-top"><div class="prog-num num">${done.length} <span>/ ${sched.length} loetud</span></div>
+        <div class="muted small">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div></div>
+      <div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
+      <button class="btn primary huge" data-act="scan">${IC.qr} Skanni QR-kood</button>
+    </section>
+    ${chipsHtml()}
+    <input class="search" type="search" id="q" data-bind="q" value="${esc(S.q)}" placeholder="Otsi numbri, nime või asukoha järgi" aria-label="Otsi">
+    <section class="sec"><div class="sec-h"><h2>Lugeda</h2><span class="muted num">${due.length}</span></div>
+      <div class="list">${due.length ? due.map(m => mrow(m, `<span class="pill due">${FREQ_SHORT[m.freq]}</span>`)).join("") : `<p class="muted" style="margin:0">Kõik selle perioodi näidud on loetud.</p>`}</div></section>
+    ${done.length ? `<section class="sec"><button class="toggle" data-act="toggleDone" aria-expanded="${S.showDone}">${S.showDone ? "▾" : "▸"} Loetud (${done.length})</button>
+      ${S.showDone ? `<div class="list">${done.map(m => { const r = doneReading(m, now); return mrow(m, `<span class="pill ${r.warn ? "warn" : "done"}">${r.warn ? "Hoiatus" : "Loetud"} ${dStr(r.ts).slice(0, 5)}</span>`); }).join("")}</div>` : ""}</section>` : ""}
+    ${none.length ? `<section class="sec"><div class="sec-h"><h2>Graafikuta</h2><span class="muted num">${none.length}</span></div>
+      <div class="list">${none.map(m => mrow(m, `<span class="pill none">vajadusel</span>`)).join("")}</div></section>` : ""}
+  </main>`;
+}
+function vRead(){
+  const m = meter(S.cur); if (!m) return vRound();
+  const t = typeOf(m.type), u = unitOf(m), prev = lastReading(m.id), ex = expected(m), d = S.draft;
+  return `<main class="wrap">
+    <div class="rhead"><span class="tag" style="--c:${t.color}"><i></i>${esc(t.name)}</span>
+      <h1>${esc(m.id)}</h1><p>${esc(m.name)}${m.location ? `<span class="muted" style="font-weight:400"> · ${esc(m.location)}</span>` : ""}</p></div>
+    ${prev ? `<div class="prev"><span class="lbl">Eelmine näit · ${dStr(prev.ts)}${prev.reader ? " · " + esc(prev.reader) : ""}</span>
+      <div class="odo"><b>${fmt(prev.value)}</b><span>${esc(u)}</span></div>
+      ${ex ? `<span class="expect">Oodatav täna umbes ${fmt(Math.round(ex.lo))} … ${fmt(Math.round(ex.hi))} ${esc(u)}</span>` : ""}</div>`
+      : `<div class="note info">Sellel mõõdikul pole veel ühtegi näitu. Esimene näit on võrdluse alus.</div>`}
+    <div class="field"><label for="rv">Uus näit${u ? ` (${esc(u)})` : ""}</label>
+      <input type="text" id="rv" class="rin" inputmode="decimal" autocomplete="off" data-bind="draft.value" value="${esc(d.value)}" placeholder="0"></div>
+    <div id="analysis">${analysisHtml()}</div>
+    ${prev ? `<label class="check"><input type="checkbox" id="repl" data-bind="draft.replaced" ${d.replaced ? "checked" : ""}> Mõõdik vahetati või läks nulli</label>` : ""}
+    <div class="field"><span class="flabel">Foto mõõdikust</span>
+      ${d.photoUrl ? `<div class="photo-prev"><img src="${d.photoUrl}" alt="Mõõdiku foto"><div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <label class="btn quiet" for="ph">${IC.cam} Tee uus</label><button class="btn danger" data-act="photoDel">Eemalda foto</button></div></div>`
+      : `<label class="btn" for="ph">${IC.cam} Tee foto</label>`}
+      <input type="file" id="ph" accept="image/*" capture="environment" hidden></div>
+    <div class="field"><label for="rc">Märkus (vabatahtlik)</label><textarea id="rc" data-bind="draft.comment">${esc(d.comment)}</textarea></div>
+    <button class="btn huge ${d.confirm ? "warnbtn" : "primary"}" data-act="saveReading" id="saveBtn">${d.confirm ? "Näit on õige, salvesta" : "Salvesta näit"}</button>
+    <button class="btn quiet" data-act="back">Tühista</button>
+  </main>`;
+}
+function analysisHtml(){
+  const m = meter(S.cur), d = S.draft; if (!m || !d) return "";
+  const v = parseNum(d.value); if (v == null) return "";
+  const a = analyse(m, v, d.replaced);
+  if (a.warns.length) return `<div class="note warn" role="alert"><b>Kontrolli näitu</b>${a.warns.map(w => `<span>${w}</span>`).join("")}
+    ${d.confirm ? `<span>Kui näit on kindlasti õige, vajuta uuesti salvesta. Hoiatus läheb ekspordifaili kaasa.</span>` : ""}</div>`;
+  return a.info.length ? `<div class="note info">${a.info.map(i => `<span>${i}</span>`).join("")}</div>` : "";
+}
+function vSaved(){
+  const r = S.lastSaved, m = meter(r.meterId); const now = new Date();
+  const next = filtered().filter(x => x.freq !== "none" && !doneReading(x, now) && x.id !== r.meterId)[0];
+  return `<main class="wrap"><div class="done-big">${IC.ok}<h1>Salvestatud</h1>
+      <p style="margin:0;font-size:1.2rem"><b class="num">${esc(m.id)}</b> · ${esc(m.name)}<br><span class="num" style="font-size:1.6rem;font-weight:700">${fmt(r.value)} ${esc(unitOf(m))}</span></p>
+      ${r.warn ? `<span class="pill warn">Salvestatud hoiatusega</span>` : ""}${r.photo ? `<span class="pill done">Foto lisatud</span>` : ""}</div>
+    <button class="btn primary huge" data-act="scan">${IC.qr} Skanni järgmine</button>
+    ${next ? `<button class="btn" data-act="read" data-id="${esc(next.id)}">Järgmine nimekirjas: ${esc(next.id)} · ${esc(next.name)}</button>` : `<div class="note info">Kõik selle perioodi näidud on loetud.</div>`}
+    <button class="btn quiet" data-act="tab" data-v="round">Tagasi nimekirja</button></main>`;
+}
+function vUnknown(){
+  return `<main class="wrap"><div class="empty"><h2>Mõõdik <span class="num">${esc(S.unknownId)}</span> pole veel registreeritud</h2>
+    <p style="margin:0">Registreeri see mõõdik nüüd. Pärast salvestamist saad kohe näidu sisestada.</p>
+    <button class="btn primary huge" data-act="regUnknown">${IC.plus} Registreeri mõõdik</button>
+    <button class="btn quiet" data-act="tab" data-v="round">Tagasi</button></div></main>`;
+}
+function vMeters(){
+  const list = filtered();
+  return `<main class="wrap">
+    <div class="row2 stack"><button class="btn primary" data-act="addMeter">${IC.plus} Lisa mõõdik</button>
+      <button class="btn" data-act="printView" data-v="meters">${IC.print} QR-sildid</button></div>
+    ${chipsHtml()}
+    <input class="search" type="search" id="q" data-bind="q" value="${esc(S.q)}" placeholder="Otsi numbri, nime või asukoha järgi" aria-label="Otsi">
+    <div class="list">${list.length ? list.map(m => { const l = lastReading(m.id);
+      return mrow(m, `<span class="pill none">${FREQ[m.freq]}${l ? "" : " · näiduta"}</span>`); }).join("") : `<p class="muted">Ühtegi mõõdikut ei leitud.</p>`}</div>
+    ${S.meters.length ? "" : `<button class="btn quiet" data-act="sample">Proovi näidisandmetega</button>`}
+  </main>`;
+}
+function vDetail(){
+  const m = meter(S.cur); if (!m) return vMeters();
+  const t = typeOf(m.type), u = unitOf(m), rs = readingsOf(m.id).slice().reverse();
+  return `<main class="wrap">
+    <div class="rhead"><span class="tag" style="--c:${t.color}"><i></i>${esc(t.name)}</span><h1>${esc(m.id)}</h1><p>${esc(m.name)}</p></div>
+    <button class="btn primary huge" data-act="read" data-id="${esc(m.id)}">Sisesta näit</button>
+    <div class="card"><dl class="kv">
+      <dt>Asukoht</dt><dd>${esc(m.location || "–")}</dd><dt>Ühik</dt><dd>${esc(u || "–")}</dd>
+      <dt>Sagedus</dt><dd>${FREQ[m.freq]}</dd>${m.note ? `<dt>Märkus</dt><dd>${esc(m.note)}</dd>` : ""}</dl>
+      <button class="btn quiet" data-act="editMeter">Muuda andmeid</button></div>
+    <div class="card"><h3>QR-kood</h3><div class="qrbox">${qrSvg(qrText(m.id))}<span class="url">${esc(qrText(m.id))}</span></div></div>
+    <div class="card"><h3>Ajalugu (${rs.length})</h3>
+      ${rs.length ? `<div class="hist"><table><thead><tr><th>Kuupäev</th><th style="text-align:right">Näit</th><th style="text-align:right">Tarbimine</th><th>Info</th><th></th></tr></thead><tbody>
+      ${rs.map((r, i) => { const p = rs[i+1]; const c = (p && !r.replaced) ? r.value - p.value : null;
+        return `<tr><td>${dStr(r.ts)}<br><span class="muted small">${tStr(r.ts)} ${esc(r.reader || "")}</span></td>
+          <td class="n">${fmt(r.value)}</td><td class="n">${c != null ? fmt(Math.round(c * 1000) / 1000) : (r.replaced ? "vahetus" : "–")}</td>
+          <td>${r.warn ? `<span class="pill warn">Hoiatus</span> ` : ""}${r.photo ? `<button class="linkbtn" data-act="showPhoto" data-id="${r.rid}">Foto</button> ` : ""}${r.comment ? `<span class="small">${esc(r.comment)}</span>` : ""}</td>
+          <td><button class="linkbtn del ${S.armed === "r" + r.rid ? "armed" : ""}" data-act="delReading" data-id="${r.rid}">${S.armed === "r" + r.rid ? "Kinnita" : "Kustuta"}</button></td></tr>`; }).join("")}
+      </tbody></table></div>` : `<p class="muted" style="margin:0">Näite veel pole.</p>`}</div>
+    <div id="photoBox"></div>
+    <button class="btn ${S.armed === "m" + m.id ? "armed" : "danger"}" data-act="delMeter">${S.armed === "m" + m.id ? "Vajuta uuesti: kustutab mõõdiku ja kõik näidud" : "Kustuta mõõdik"}</button>
+    <button class="btn quiet" data-act="tab" data-v="meters">Tagasi mõõdikute juurde</button>
+  </main>`;
+}
+function vForm(){
+  const f = S.form;
+  return `<main class="wrap"><h1 style="font-size:1.5rem">${f.isNew ? "Uus mõõdik" : "Muuda mõõdikut"}</h1>
+    <div class="field"><label for="f-id">Mõõdiku number või tähis</label>
+      <input type="text" id="f-id" class="num" data-bind="form.id" value="${esc(f.id)}" ${f.isNew ? "" : "readonly"} placeholder="nt E-012 või tehase number" autocapitalize="characters" autocomplete="off">
+      ${f.isNew ? `<span class="muted small">Selle järgi tunneb tööriist mõõdiku ära. Sama tähis läheb QR-koodi.</span>` : ""}</div>
+    <div class="field"><label for="f-name">Nimetus</label><input type="text" id="f-name" data-bind="form.name" value="${esc(f.name)}" placeholder="nt Peakilp"></div>
+    <div class="field"><label for="f-loc">Asukoht</label><input type="text" id="f-loc" data-bind="form.location" value="${esc(f.location)}" placeholder="nt Tootmishoone A, kelder"></div>
+    <div class="field"><span class="flabel">Liik</span><div class="opts">
+      ${S.settings.types.map(t => `<button class="opt" data-act="fType" data-v="${esc(t.key)}" aria-pressed="${f.type === t.key}" style="--c:${t.color}"><span class="dot"></span>${esc(t.name)}</button>`).join("")}</div></div>
+    <div class="field"><label for="f-unit">Ühik</label><input type="text" id="f-unit" data-bind="form.unit" value="${esc(f.unit)}" placeholder="nt kWh"></div>
+    <div class="field"><span class="flabel">Kui tihti loetakse</span><div class="opts">
+      ${Object.keys(FREQ).map(k => `<button class="opt" data-act="fFreq" data-v="${k}" aria-pressed="${f.freq === k}">${FREQ[k]}</button>`).join("")}</div></div>
+    ${f.isNew ? `<div class="field"><label for="f-start">Praegune näit (vabatahtlik)</label>
+      <input type="text" id="f-start" class="rin" inputmode="decimal" data-bind="form.start" value="${esc(f.start)}" placeholder="0" style="font-size:2rem!important;min-height:70px!important">
+      <span class="muted small">Kui sisestad, salvestatakse see kohe esimese näiduna.</span></div>` : ""}
+    <div class="field"><label for="f-note">Märkus</label><textarea id="f-note" data-bind="form.note" placeholder="nt võti valvelauas">${esc(f.note)}</textarea></div>
+    <button class="btn primary huge" data-act="saveMeter">Salvesta mõõdik</button>
+    <button class="btn quiet" data-act="cancelForm">Tühista</button></main>`;
+}
+function vExport(){
+  const rows = exportRows(); const prev = rows.slice(-5).reverse();
+  const cols = ["Kuupäev","Periood","Lugeja","Mõõdiku ID","Nimetus","Näit","Tarbimine","Hoiatus"];
+  return `<main class="wrap"><h1 style="font-size:1.5rem">Eksport</h1>
+    <div class="note warn"><b>Demos eksport puudub</b>
+      <span>Täisversioon teeb ühe vajutusega Exceli faili lugeja nimega, näiteks <b class="num">${esc(fileBase())}.xlsx</b>, koos fotode ZIP-failiga. Objektijuht liidab lugejate andmed kokku ja teeb ühe ühise ekspordi, kus iga mõõdiku kohta on perioodi viimane näit.</span>
+      <a class="btn primary" href="../business/#kontakt" style="margin-top:6px">Küsi pakkumist</a></div>
+    <div class="card"><h3>Nii näeb Exceli fail välja</h3>
+      <p class="muted small" style="margin:0">Viimased ${prev.length} rida ${rows.length}-st. Täisversioonis on 17 veergu, sh asukoht, ühik, eelmine näit, kommentaar ja foto failinimi.</p>
+      <div class="hist"><table><thead><tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>
+      ${prev.map(x => `<tr>${cols.map(c => { const v = x[c]; return `<td class="${typeof v === "number" ? "n" : ""}">${v instanceof Date ? dStr(v) : typeof v === "number" ? fmt(v) : esc(v)}</td>`; }).join("")}</tr>`).join("")}
+      </tbody></table></div></div>
+  </main>`;
+}
+function vSettings(){
+  return `<main class="wrap"><h1 style="font-size:1.5rem">Seaded</h1>
+    <div class="card"><h3>Lugeja</h3><p style="margin:0;font-size:1.2rem"><b>${esc(S.settings.reader)}</b></p>
+      <button class="btn quiet" data-act="who">Muuda nime</button></div>
+    <div class="card"><h3>Teksti suurus</h3><div class="opts">
+      <button class="opt" data-act="size" data-v="l" aria-pressed="${S.settings.size !== "xl"}">Suur</button>
+      <button class="opt" data-act="size" data-v="xl" aria-pressed="${S.settings.size === "xl"}" style="font-size:1.2rem">Väga suur</button></div></div>
+    <div class="card"><h3>Mõõdikute liigid</h3>
+      <div class="opts">${S.settings.types.map(t => `<span class="opt" style="--c:${t.color};cursor:default"><span class="dot"></span>${esc(t.name)}${t.unit ? ` <span class="muted">${esc(t.unit)}</span>` : ""}</span>`).join("")}</div>
+      <div class="row2"><div class="field"><label for="t-name">Uus liik</label><input type="text" id="t-name" data-bind="newType.name" value="${esc(S.newType?.name || "")}" placeholder="nt Suruõhk"></div>
+        <div class="field"><label for="t-unit">Ühik</label><input type="text" id="t-unit" data-bind="newType.unit" value="${esc(S.newType?.unit || "")}" placeholder="nt Nm³"></div></div>
+      <button class="btn" data-act="addType">${IC.plus} Lisa liik</button></div>
+    <div class="card"><h3>Kasutusjuhend</h3>
+      <a class="btn quiet" href="juhend.html">Ava kasutusjuhend</a>
+      <a class="btn quiet" href="juhend.pdf">Juhend PDF-ina</a></div>
+    <div class="card"><h3>Parendusettepanekud</h3>
+      <p style="margin:0" class="small">Kas midagi segab või on puudu? Kirjuta see üles.${S.ideas.length ? ` Salvestatud: <b>${S.ideas.length}</b>.` : ""}</p>
+      <button class="btn" data-act="ideas">Ava ettepanekud</button></div>
+    <div class="card"><h3>Andmed</h3>
+      ${S.meters.some(m => m.sample) ? `<button class="btn quiet" data-act="unsample">Eemalda näidisandmed</button>` : `<button class="btn quiet" data-act="sample">Lae näidisandmed</button>`}
+      <button class="btn quiet" data-act="printView" data-v="blank">${IC.print} Prindi tühjad QR-kleebised</button>
+      <button class="btn ${S.armed === "wipe" ? "armed" : "danger"}" data-act="wipe">${S.armed === "wipe" ? "Vajuta uuesti: kustutab kõik selle seadme andmed" : "Kustuta kõik andmed"}</button></div>
+    <p class="muted small" style="margin:0">Andmed on ainult selles telefonis ja selles brauseris. Tee eksporti ja varukoopiat regulaarselt.</p>
+  </main>`;
+}
+function vIdeas(){
+  const list = ideasSorted();
+  return `<main class="wrap"><h1 style="font-size:1.5rem">Parendusettepanekud</h1>
+    <p class="muted" style="margin:0">Kirjuta, mis tööriistas segab, mis on puudu või mis võiks olla teisiti. Ettepanekud jäävad sellesse telefoni, kuni need ekspordid.</p>
+    <div class="field"><span class="flabel">Liik</span><div class="opts">
+      ${Object.keys(IDEA_KINDS).map(k => `<button class="opt" data-act="ideaKind" data-v="${k}" aria-pressed="${S.idea.kind === k}">${IDEA_KINDS[k]}</button>`).join("")}</div></div>
+    <div class="field"><label for="i-text">Sinu ettepanek</label>
+      <textarea id="i-text" data-bind="idea.text" style="min-height:150px" placeholder="nt Soovin näha ka üle-eelmist näitu">${esc(S.idea.text)}</textarea></div>
+    <button class="btn primary huge" data-act="saveIdea">Salvesta ettepanek</button>
+    <div class="card"><div class="sec-h"><h3>Kõik ettepanekud</h3><span class="muted num">${list.length}</span></div>
+      ${list.length ? `<div class="list">${list.map(x => `<div style="border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:4px">
+          <span class="muted small">${dStr(x.ts)} ${tStr(x.ts)} · ${esc(x.author || "")} · <b>${esc(IDEA_KINDS[x.kind] || x.kind)}</b></span>
+          <span style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(x.text)}</span>
+          <button class="linkbtn del ${S.armed === "i" + x.iid ? "armed" : ""}" data-act="delIdea" data-id="${x.iid}" style="align-self:flex-start">${S.armed === "i" + x.iid ? "Kinnita kustutamine" : "Kustuta"}</button></div>`).join("")}</div>
+        <button class="btn" data-act="ideasXlsx">${IC.out} Ekspordi kõik Excelisse</button>
+        <button class="btn quiet" data-act="ideasCopy">Kopeeri kõik tekstina</button>
+        <textarea id="i-all" hidden readonly style="min-height:120px;width:100%"></textarea>`
+      : `<p class="muted" style="margin:0">Ettepanekuid veel pole.</p>`}
+      <p class="muted small" style="margin:0">Ettepanekud liiguvad ka varukoopiaga kaasa. Kui objektijuht laeb lugejate varukoopiad sisse, näeb ta siin kõigi ettepanekuid.</p></div>
+    <button class="btn quiet" data-act="tab" data-v="settings">Tagasi seadetesse</button>
+  </main>`;
+}
+function vPrint(){
+  const P = S.print; let items = [];
+  if (P.mode === "meters") items = filtered().map(m => ({id:m.id, name:m.name, t:typeOf(m.type)}));
+  else { const n = Math.min(Math.max(parseInt(P.count) || 0, 0), 200), s = Math.max(parseInt(P.start) || 1, 0);
+    for (let i = 0; i < n; i++){ const id = normId(`${P.prefix}${String(s + i).padStart(3, "0")}`); items.push({id, name:meter(id)?.name || "", t:null}); } }
+  return `<main class="wrap">
+    <div class="noprint" style="display:flex;flex-direction:column;gap:12px">
+      <h1 style="font-size:1.5rem">${P.mode === "meters" ? "Mõõdikute QR-sildid" : "Tühjad QR-kleebised"}</h1>
+      ${P.mode === "blank" ? `<p class="muted" style="margin:0">Kleebi need esimesel ringil mõõdikutele. Skanni kleebis ja tööriist pakub mõõdiku registreerimist selle numbriga.</p>
+        <div class="row2"><div class="field"><label for="p-pre">Eesliide</label><input type="text" id="p-pre" data-bind="print.prefix" value="${esc(P.prefix)}"></div>
+        <div class="field"><label for="p-start">Algusnumber</label><input type="text" inputmode="numeric" id="p-start" data-bind="print.start" value="${esc(P.start)}"></div></div>
+        <div class="field"><label for="p-cnt">Kogus</label><input type="text" inputmode="numeric" id="p-cnt" data-bind="print.count" value="${esc(P.count)}"></div>
+        <button class="btn quiet" data-act="printRefresh">Uuenda eelvaadet</button>` : `<p class="muted" style="margin:0">${items.length} silti. Liigifilter mõõdikute vaates mõjutab, millised sildid tulevad.</p>`}
+      ${/^https?:/.test(location.protocol) ? "" : `<div class="note warn"><span>Tööriist on avatud failina. QR-kood sisaldab ainult mõõdiku numbrit, nii et seda saab skannida tööriista enda skanneriga. Telefoni tavalise kaameraga avanemiseks pane tööriist veebi üles.</span></div>`}
+      <div class="row2"><button class="btn primary" data-act="doPrint">${IC.print} Prindi</button><button class="btn quiet" data-act="tab" data-v="${P.mode === "meters" ? "meters" : "settings"}">Tagasi</button></div>
+    </div>
+    <div class="labels">${items.map(x => `<div class="lab">${qrSvg(qrText(x.id))}<span class="lid">${esc(x.id)}</span>
+      ${x.name ? `<span class="lnm">${esc(x.name)}</span>` : ""}${x.t ? `<span class="ltp" style="--c:${x.t.color}">${esc(x.t.name)}</span>` : ""}</div>`).join("")}</div>
+  </main>`;
+}
+
+const TABS = [["round","Ringkäik","list"],["meters","Mõõdikud","meter"],["export","Eksport","out"],["settings","Seaded","gear"]];
+const TAB_OF = {round:"round", read:"round", saved:"round", unknown:"round", meters:"meters", detail:"meters", form:"meters", print:"meters", export:"export", settings:"settings", ideas:"settings"};
+function render(){
+  if (!S.settings.reader || S.view === "name"){ S.view = "name"; }
+  const V = {name:vName, round:vRound, read:vRead, saved:vSaved, unknown:vUnknown, meters:vMeters, detail:vDetail, form:vForm, export:vExport, settings:vSettings, print:vPrint, ideas:vIdeas}[S.view] || vRound;
+  const showTabs = !["name","read","form","print"].includes(S.view);
+  const top = S.view === "name" ? "" : `<header class="top"><div class="wrap topin"><span class="brand">${IC.logo} Näiduring</span>
+    <button class="who" data-act="who" aria-label="Muuda lugeja nime">${esc(S.settings.reader)}</button></div></header>`;
+  const tabs = showTabs ? `<nav class="tabs" aria-label="Peamenüü"><div class="wrap">${TABS.map(([k, l, i]) =>
+    `<button class="tab" data-act="tab" data-v="${k}" ${TAB_OF[S.view] === k ? 'aria-current="page"' : ""}>${IC[i]}${l}</button>`).join("")}</div></nav>` : "";
+  const warn = S.dbOk ? "" : `<div class="wrap" style="padding-block:10px"><div class="note warn"><b>Andmeid ei saa selles brauseris salvestada</b><span>Ava tööriist tavalises (mitte privaatses) brauseriaknas.</span></div></div>`;
+  const demo = S.view === "print" ? "" : `<div class="demo noprint"><div class="wrap">DEMO · eksport puudub · kuni ${DEMO_MAX} mõõdikut · <a href="../business/#kontakt">Küsi pakkumist</a></div></div>`;
+  $("#app").innerHTML = top + demo + warn + V() + tabs;
+  if (S.view === "read" && !S.draft.value) setTimeout(() => $("#rv")?.focus(), 50);
+}
+
+/* ---------- sündmused ---------- */
+function setPath(path, val){ const k = path.split("."); let o = S; for (let i = 0; i < k.length - 1; i++){ o[k[i]] = o[k[i]] || {}; o = o[k[i]]; } o[k[k.length-1]] = val; }
+document.addEventListener("input", e => {
+  const el = e.target; const b = el.dataset?.bind; if (!b) return;
+  setPath(b, el.type === "checkbox" ? el.checked : el.value);
+  if (b === "draft.value" || b === "draft.replaced"){ S.draft.confirm = false; $("#analysis").innerHTML = analysisHtml();
+    const sb = $("#saveBtn"); if (sb){ sb.className = "btn huge primary"; sb.textContent = "Salvesta näit"; } }
+  if (b === "q"){ const pos = el.selectionStart; render(); const q = $("#q"); if (q){ q.focus(); try { q.setSelectionRange(pos, pos); } catch(_){} } }
+  if (b.startsWith("exp.")) render();
+});
+document.addEventListener("change", async e => {
+  const el = e.target;
+  if (el.id === "repl"){ S.draft.replaced = el.checked; S.draft.confirm = false; render(); }
+  if (el.id === "ph" && el.files?.[0]){
+    try { const blob = await compress(el.files[0]); if (S.draft.photoUrl) URL.revokeObjectURL(S.draft.photoUrl);
+      S.draft.photoBlob = blob; S.draft.photoUrl = URL.createObjectURL(blob); render(); }
+    catch(_){ toast("Fotot ei õnnestunud lugeda"); }
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.id === "rv"){ e.preventDefault(); saveReading(); }
+  if (e.key === "Enter" && e.target.id === "nm"){ e.preventDefault(); act("setName"); }
+});
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  act(el.dataset.act, el.dataset.v, el.dataset.id, el);
+});
+async function act(a, v, id, el){
+  switch(a){
+    case "tab": S.view = v; S.q = S.view === "round" || S.view === "meters" ? S.q : ""; render(); window.scrollTo(0, 0); break;
+    case "who": S.nameDraft = S.settings.reader; S.view = "name"; S.settings._prev = S.settings.reader; render(); setTimeout(() => $("#nm")?.focus(), 50); break;
+    case "setName": { const n = (S.nameDraft ?? "").trim(); if (!n){ toast("Sisesta oma nimi"); return; }
+      S.settings.reader = n; delete S.settings._prev; S.nameDraft = undefined; await saveSettings(); S.view = "round"; render();
+      if (pendingHash){ const h = pendingHash; pendingHash = null; openById(h); } break; }
+    case "scan": openScanner(); break;
+    case "scanClose": closeScanner(); break;
+    case "filter": S.filter = v; render(); break;
+    case "toggleDone": S.showDone = !S.showDone; render(); break;
+    case "read": startReading(id); break;
+    case "detail": S.cur = id; S.view = "detail"; render(); window.scrollTo(0, 0); break;
+    case "back": if (S.draft?.photoUrl) URL.revokeObjectURL(S.draft.photoUrl); S.draft = null; S.view = "round"; render(); break;
+    case "saveReading": saveReading(); break;
+    case "photoDel": if (S.draft.photoUrl) URL.revokeObjectURL(S.draft.photoUrl); S.draft.photoBlob = null; S.draft.photoUrl = null; render(); break;
+    case "addMeter": newMeterForm(); S.formFrom = null; S.view = "form"; render(); window.scrollTo(0, 0); break;
+    case "regUnknown": newMeterForm(S.unknownId); S.formFrom = "scan"; S.view = "form"; render(); setTimeout(() => $("#f-name")?.focus(), 50); break;
+    case "editMeter": { const m = meter(S.cur); S.form = {isNew:false, id:m.id, name:m.name, location:m.location || "", type:m.type, unit:m.unit || "", freq:m.freq, start:"", note:m.note || ""}; S.view = "form"; render(); window.scrollTo(0, 0); break; }
+    case "fType": { const prevUnit = typeOf(S.form.type).unit; S.form.type = v; if (!S.form.unit || S.form.unit === prevUnit) S.form.unit = typeOf(v).unit; render(); break; }
+    case "fFreq": S.form.freq = v; render(); break;
+    case "saveMeter": saveMeter(); break;
+    case "cancelForm": S.view = S.form?.isNew ? (S.formFrom === "scan" ? "round" : "meters") : "detail"; S.form = null; render(); break;
+    case "delMeter": if (isArmed("m" + S.cur)) deleteMeter(S.cur); break;
+    case "delReading": if (isArmed("r" + id)) deleteReading(id); break;
+    case "showPhoto": { const b = await DB.get("photos", id); const box = $("#photoBox"); if (!b || !box) return;
+      box.innerHTML = `<div class="card"><img src="${URL.createObjectURL(b)}" alt="Mõõdiku foto" style="border-radius:8px"><button class="btn quiet" data-act="hidePhoto">Sulge foto</button></div>`; box.scrollIntoView({block:"start"}); break; }
+    case "hidePhoto": $("#photoBox").innerHTML = ""; break;
+    case "expRange": S.exp.range = v; render(); break;
+    case "xlsx": case "zip": case "backup": toast(DEMO_MSG); break;
+    case "size": S.settings.size = v; await saveSettings(); render(); break;
+    case "addType": { const n = (S.newType?.name || "").trim(); if (!n){ toast("Sisesta liigi nimi"); return; }
+      const key = n.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-"); if (S.settings.types.some(t => t.key === key)){ toast("Selline liik on juba olemas"); return; }
+      S.settings.types.splice(S.settings.types.length - 1, 0, {key, name:n, unit:(S.newType.unit || "").trim(), color:EXTRA_COLORS[(S.settings.types.length - TYPES_DEFAULT.length) % EXTRA_COLORS.length]});
+      S.newType = null; await saveSettings(); toast(`Liik „${n}" lisatud`); render(); break; }
+    case "sample": await loadSample(); break;
+    case "unsample": await removeSample(); break;
+    case "wipe": if (isArmed("wipe")) await wipeAll(); break;
+    case "printView": S.print.mode = v; S.view = "print"; render(); window.scrollTo(0, 0); break;
+    case "printRefresh": render(); break;
+    case "doPrint": window.print(); break;
+    case "ideas": S.view = "ideas"; render(); window.scrollTo(0, 0); break;
+    case "ideaKind": S.idea.kind = v; render(); break;
+    case "saveIdea": saveIdea(); break;
+    case "delIdea": if (isArmed("i" + id)) deleteIdea(id); break;
+    case "ideasXlsx": ideasExcel(); break;
+    case "ideasCopy": ideasCopy(); break;
+  }
+}
+
+/* ---------- käivitus ---------- */
+let pendingHash = null;
+function readHash(){
+  const p = new URLSearchParams(location.hash.slice(1)); const m = p.get("m");
+  if (m){ history.replaceState(null, "", location.pathname + location.search); return normId(m); }
+  return null;
+}
+window.addEventListener("hashchange", () => { const h = readHash(); if (h){ if (S.settings.reader) openById(h); else pendingHash = h; } });
+(async () => {
+  await load();
+  if (!S.meters.length && S.dbOk) await loadSample();
+  const h = readHash();
+  if (!S.settings.reader){ S.view = "name"; pendingHash = h; render(); }
+  else if (h) openById(h);
+  else render();
+})();
+</script>
+</body>
+</html>
