@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="et">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Näiduring · Kasutusjuhend</title>
+<link rel="stylesheet" href="naiduring-fonts.css">
+<style>
+/* Ekraanil üks veerg, printimisel A4-leheküljed (iga .page on oma leht). */
+@page{size:A4;margin:0}
+:root{
+  --bg:#ECEEEA; --paper:#FFFFFF; --sunk:#F5F6F3; --ink:#18212C; --muted:#56606C; --line:#CDD3CC;
+  --accent:#1F3A5C; --accent-soft:#DCE6F1; --ok:#2C6E35; --ok-bg:#E0F0E1; --warn:#8A5200; --warn-bg:#FFEFCC; --warn-line:#E0A23A; --bad:#A8231B; --bad-bg:#FBE3E0;
+  --c-el:#C98A00; --c-ve:#1E73BE; --c-so:#C0462B; --c-ga:#2E8B6E; --c-mu:#6B5FA8;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",Roboto,Arial,sans-serif;
+  --f-num:"Atkinson Hyperlegible Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.doc{max-width:860px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:24px}
+.page{background:var(--paper);border-radius:10px;box-shadow:0 1px 3px rgba(24,33,44,.12);padding:40px 44px 56px;position:relative;display:flex;flex-direction:column;gap:14px}
+.foot{position:absolute;left:44px;right:44px;bottom:18px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px}
+h1,h2,h3{margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:44px;letter-spacing:-.01em}
+h2{font-size:28px}
+h3{font-size:18px}
+p{margin:0}
+.kick{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:19px;color:var(--muted);max-width:62ch}
+.num,.mono{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.url{font-family:var(--f-num);font-weight:700;overflow-wrap:anywhere}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+b{font-weight:700}
+.row{display:flex;gap:28px;align-items:flex-start}
+.grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.shot{flex:none;width:210px;border:7px solid var(--ink);border-radius:26px;overflow:hidden;background:var(--ink);box-shadow:0 6px 18px rgba(24,33,44,.18)}
+.shot img{display:block;width:100%;height:auto}
+.shot.sm{width:180px}
+.cap{font-size:13px;color:var(--muted);text-align:center;margin-top:6px}
+.fig{flex:none;display:flex;flex-direction:column;align-items:center}
+.card{background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.steps{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;counter-increment:s}
+.steps li::before{content:counter(s);width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center}
+.note{border-radius:10px;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.note.warn{background:var(--warn-bg);border:2px solid var(--warn-line)}
+.note.warn b.t{color:var(--warn)}
+.note.bad{background:var(--bad-bg);border:2px solid var(--bad)}
+.note.bad b.t{color:var(--bad)}
+.note.ok{background:var(--ok-bg);border:1px solid var(--ok)}
+.note.info{background:var(--accent-soft)}
+.btn{display:inline-block;font-weight:700;color:var(--accent);border:2px solid var(--accent);border-radius:7px;padding:0 7px;font-size:.92em;white-space:nowrap;line-height:1.5}
+.btn.p{background:var(--accent);color:#fff}
+.path{font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td:first-child{font-weight:700;white-space:nowrap}
+.tw{overflow-x:auto}
+.types{display:flex;flex-wrap:wrap;gap:8px}
+.types span{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--line);border-radius:999px;padding:2px 12px;font-weight:700;font-size:14px}
+.types i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.flow{display:grid;grid-template-columns:1fr 28px 1fr 28px 1fr;align-items:stretch}
+.flow .card{background:var(--paper)}
+.arr{display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:22px;font-weight:700}
+.toc{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:4px 12px;font-size:15px}
+.toc span:nth-child(odd){font-family:var(--f-num);color:var(--accent);font-weight:700}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.who .card{background:var(--paper);border:2px solid var(--accent)}
+.qr{width:150px;height:150px;flex:none;background:#fff;padding:10px;border:1px solid var(--line);border-radius:10px}
+.qr img{width:100%;height:100%;display:block}
+.brand{display:flex;align-items:center;gap:12px;color:var(--accent)}
+.brand svg{width:46px;height:46px}
+.spacer{flex:1}
+.faq{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px}
+.faq b{display:block;margin-bottom:2px}
+.faq p{font-size:14.5px}
+.terms{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.terms p{font-size:13px;color:var(--muted)}
+@media (max-width:700px){
+  .page{padding:24px 18px 48px}
+  .foot{left:18px;right:18px}
+  .row{flex-direction:column;align-items:center}
+  .row .grow{width:100%}
+  h1{font-size:34px} h2{font-size:24px}
+  .grid2,.grid3,.who,.faq{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr}
+  .flow .arr{transform:rotate(90deg);height:28px}
+  .toc{grid-template-columns:auto 1fr}
+}
+@media print{
+  body{background:#fff;font-size:12.6pt}
+  .doc{max-width:none;padding:0;gap:0}
+  .page{width:210mm;height:297mm;border-radius:0;box-shadow:none;padding:16mm 17mm 18mm;break-after:page;overflow:hidden}
+  .page:last-child{break-after:auto}
+  .foot{left:17mm;right:17mm;bottom:9mm}
+  .noprint{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="doc">
+
+<!-- 1 Kaas -->
+<section class="page">
+  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-4M9 2h6"/></svg><span class="kick">Silent Tools · Kasutusjuhend</span></div>
+  <h1>Näiduring</h1>
+  <p class="lede">Mõõdikute näidud telefoniga, ilma paberi ja ümberkirjutamiseta. Skanni mõõdiku QR-kood, sisesta näit, tööriist kontrollib selle eelmise näidu vastu ja kuu lõpus saad kõik ühe Exceli failina.</p>
+  <div class="card" style="flex-direction:row;gap:22px;align-items:center;flex-wrap:wrap">
+    <div class="qr"><img src="naiduring-qr.svg" alt="QR-kood: silent-tools.github.io/naiduring"></div>
+    <div class="grow" style="gap:6px">
+      <h3>Ava tööriist</h3>
+      <p>Skanni kood telefoni kaameraga või kirjuta brauserisse:</p>
+      <p class="url" style="font-size:20px">silent-tools.github.io/<wbr>naiduring</p>
+      <p class="muted small">Kontot, parooli ega rakenduse paigaldamist pole vaja.</p>
+    </div>
+  </div>
+  <div class="who">
+    <div class="card"><h3>Lugejale</h3><p>Kes käib mõõdikuid lugemas. Loe lehekülgi 2–6.</p></div>
+    <div class="card"><h3>Objektijuhile</h3><p>Kes seadistab mõõdikud ja paneb lugejate andmed kokku. Loe kogu juhend, eriti lk 7–8.</p></div>
+  </div>
+  <div class="note bad"><b class="t">Telefonis kõigepealt avaekraanile</b>
+    <p>iPhone'i Safari võib veebilehe andmed kustutada, kui lehte pole 7 päeva avatud. Avaekraanile lisatud ikoon hoiab mõõdikud ja näidud alles. Vaata lk 2.</p></div>
+  <div class="spacer"></div>
+  <div class="toc">
+    <span>2</span><span>Alustamine</span>
+    <span>6</span><span>Parandamine ja ajalugu</span>
+    <span>3</span><span>Esimene ring: mõõdikute registreerimine</span>
+    <span>7</span><span>Eksport Excelisse</span>
+    <span>4</span><span>Ringkäik</span>
+    <span>8</span><span>Mitu lugejat: objektijuhile</span>
+    <span>5</span><span>Näidu sisestamine ja hoiatused</span>
+    <span>9</span><span>Seaded, ettepanekud ja küsimused</span>
+  </div>
+  <div class="foot"><span>Näiduring · kasutusjuhend</span><span>1</span></div>
+</section>
+
+<!-- 2 Alustamine -->
+<section class="page">
+  <span class="kick">Alustamine</span>
+  <h2>Kolm sammu enne esimest ringi</h2>
+  <div class="row">
+    <div class="grow">
+      <ol class="steps">
+        <li><div><b>Ava link.</b> Skanni esimese lehe QR-kood või kirjuta <span class="url">silent-tools.github.io/<wbr>naiduring</span> Safarisse või Chrome'i.</div></li>
+        <li><div><b>Lisa tööriist avaekraanile.</b> Siis avaneb see nagu rakendus oma ikooniga ja andmed püsivad alles. Juhised on allpool.</div></li>
+        <li><div><b>Kirjuta oma nimi</b> ja vajuta <span class="btn p">Alusta</span>. Nimi läheb iga näidu juurde ja Exceli faili nimesse, nii saab eri lugejate failidel vahet teha. Nime saab hiljem muuta ülaribal oma nimele vajutades.</div></li>
+      </ol>
+    </div>
+    <div class="fig"><div class="shot sm"><img src="s_name.jpg" alt="Nime sisestamise vaade"></div><div class="cap">Nimi küsitakse ainult esimesel korral</div></div>
+  </div>
+  <h3>Avaekraanile lisamine</h3>
+  <div class="grid3">
+    <div class="card"><b>iPhone, Safari</b><p class="small">Vajuta jagamisnuppu (ruut noolega üles; uuemas Safaris kõigepealt <b>⋯</b>). Keri alla, vali <b>Lisa avakuvale</b> ja <b>Lisa</b>.</p></div>
+    <div class="card"><b>Android, Chrome</b><p class="small">Vajuta üleval paremal <b>⋮</b>, vali <b>Lisa avaekraanile</b> ja <b>Lisa</b>.</p></div>
+    <div class="card"><b>Arvuti</b><p class="small">Lisa leht järjehoidjatesse (<b>Ctrl+D</b>, Macis <b>⌘D</b>).</p></div>
+  </div>
+  <div class="note bad"><b class="t">Edaspidi ava tööriist ainult ikoonilt</b>
+    <p>iPhone'is on avaekraani ikoonil ja Safari vahelehel eraldi andmed. Ühes sisestatud näidud teises ei paista.</p></div>
+  <div class="spacer"></div>
+  <div class="note ok"><p>Kõik, mida sisestad, jääb sinu telefoni. Andmeid ei saadeta kuhugi enne, kui ise ekspordid.</p></div>
+  <div class="foot"><span>Näiduring · kasutusjuhend</span><span>2</span></div>
+</section>
+
+<!-- 3 Registreerimine -->
+<section class="page">
+  <span class="kick">Esimene ring</span>
+  <h2>Mõõdikute registreerimine</h2>
+  <p>Esimesel ringil antakse igale mõõdikule tähis, mille järgi tööriist teda edaspidi ära tunneb. Seda teeb tavaliselt objektijuht. Valida on kahe viisi vahel.</p>
+  <div class="grid2">
+    <div class="card"><h3>A · Kleebised enne</h3>
+      <p class="small"><span class="path">Seaded → Prindi tühjad QR-kleebised.</span> Vali eesliide (nt <span class="mono">M-</span>), algusnumber ja kogus ning prindi. Kleebi iga kleebis ühele mõõdikule. Kui skannid kleebise esimest korda, pakub tööriist kohe selle numbriga mõõdiku registreerimist.</p></div>
+    <div class="card"><h3>B · Mõõdikud enne</h3>
+      <p class="small"><span class="path">Mõõdikud → Lisa mõõdik.</span> Kasuta näiteks mõõdiku tehase numbrit või oma tähist (<span class="mono">E-012</span>). Kui kõik on sisestatud, vajuta <span class="path">Mõõdikud → QR-sildid</span> ja prindi igale mõõdikule nimega silt.</p></div>
+  </div>
+  <div class="row">
+    <div class="grow">
+      <div class="tw"><table>
+        <thead><tr><th>Väli</th><th>Mida kirjutada</th></tr></thead>
+        <tbody>
+          <tr><td>Number või tähis</td><td>Kohustuslik ja ainukordne. Sama tähis läheb QR-koodi.</td></tr>
+          <tr><td>Nimetus</td><td>Kohustuslik, nt <i>Peakilp</i>.</td></tr>
+          <tr><td>Asukoht</td><td>Hoone ja ruum, et teine lugeja selle üles leiaks.</td></tr>
+          <tr><td>Liik</td><td>Määrab värvi, ühiku ja filtri. Uusi liike saab lisada Seadetes.</td></tr>
+          <tr><td>Ühik</td><td>Täidetakse liigi järgi, vajadusel muuda.</td></tr>
+          <tr><td>Sagedus</td><td>Iganädalane, igakuine, kvartaalne, aastane või graafikuta.</td></tr>
+          <tr><td>Praegune näit</td><td>Vabatahtlik. Salvestatakse kohe esimese näiduna.</td></tr>
+          <tr><td>Märkus</td><td>Nt <i>võti valvelauas</i>.</td></tr>
+        </tbody></table></div>
+      <div class="types"><span style="--c:var(--c-el)"><i></i>Elekter kWh</span><span style="--c:var(--c-ve)"><i></i>Vesi m³</span><span style="--c:var(--c-so)"><i></i>Soojus MWh</span><span style="--c:var(--c-ga)"><i></i>Gaas m³</span><span style="--c:var(--c-mu)"><i></i>Muu</span></div>
+    </div>
+    <div class="fig"><div class="shot sm"><img src="s_form.jpg" alt="Uue mõõdiku vorm"></div></div>
+  </div>
+  <div class="note info"><b>Kleebised</b><p class="small">Sobib tavaline A4-printer ja A4-kleebiseleht. Niiskes keldris või soojussõlme juures kasuta ilmastikukindlat polüesterkleebist või kata paberkleebis läbipaistva teibiga.</p></div>
+  <div class="foot"><span>Näiduring · kasutusjuhend</span><span>3</span></div>
+</section>
+
+<!-- 4 Ringkäik -->
+<section class="page">
+  <span class="kick">Iga lugemiskord</span>
+  <h2>Ringkäik</h2>
+  <div class="row">
+    <div class="grow">
+      <p>Avalehel on kõik selle perioodi mõõdikud. Sagedus otsustab, kuhu mõõdik kuulub: igakuine mõõdik on lugemata, kuni teda pole sel kalendrikuul loetud, kvartaalne kuni teda pole selles kvartalis loetud.</p>
+      <div class="card"><b>Edenemisriba</b><p class="small">Näitab, mitu graafikuga mõõdikut on sel perioodil loetud, näiteks <span class="mono">2 / 8 loetud</span>.</p></div>
+      <div class="card"><b>Lugeda</b><p class="small">Need mõõdikud tuleb veel üle käia. Vajuta real, et avada näidu sisestus.</p></div>
+      <div class="card"><b>Loetud</b><p class="small">Avaneb noolest. Iga rea juures on lugemise kuupäev. Kollane silt <b>Hoiatus</b> tähendab, et näit salvestati hoiatusega.</p></div>
+      <div class="card"><b>Graafikuta</b><p class="small">Mõõdikud, mida loetakse vajaduse korral. Need ei lähe edenemisribasse.</p></div>
+      <p class="small">Liigi nuppudega (<b>Elekter</b>, <b>Vesi</b> …) ja otsinguga saab nimekirja kitsendada, näiteks kui üks inimene loeb ainult veemõõdikuid.</p>
+    </div>
+    <div class="fig"><div class="shot sm"><img src="s_round.jpg" alt="Ringkäigu nimekiri"></div></div>
+  </div>
+  <h3>Skanni QR-kood</h3>
+  <ol class="steps">
+    <li><div>Vajuta <span class="btn p">Skanni QR-kood</span>. Esimesel korral küsib telefon kaamera luba: vali <b>Luba</b>.</div></li>
+    <li><div>Suuna kaamera kleebisele. Kui kood on loetud, avaneb kohe selle mõõdiku näidu sisestus.</div></li>
+    <li><div>Kood ei loe? Kirjuta mõõdiku tähis skanneri all olevasse lahtrisse ja vajuta <b>Ava</b>.</div></li>
+  </ol>
+  <div class="note warn"><b class="t">Kasuta tööriista enda skannerit</b><p class="small">Telefoni tavaline kaamera avab lingi brauseri vahelehel. iPhone'is ei näe see avaekraani ikooni andmeid ja mõõdik paistab registreerimata.</p></div>
+  <div class="foot"><span>Näiduring · kasutusjuhend</span><span>4</span></div>
+</section>
+
+<!-- 5 Sisestus -->
+<section class="page">
+  <span class="kick">Näidu sisestamine</span>
+  <h2>Sisesta, vaata üle, salvesta</h2>
+  <div class="row">
+    <div class="grow">
+      <ol class="steps">
+        <li><div><b>Kontrolli, et mõõdik on õige.</b> Üleval on tähis, nimetus ja asukoht.</div></li>
+        <li><div><b>Vaata eelmist näitu.</b> Selle all on roheliselt <i>Oodatav täna umbes …</i>: vahemik, kuhu uus näit tavaliselt jääb.</div></li>
+        <li><div><b>Kirjuta näit</b> suurde lahtrisse. Koma ja punkt sobivad mõlemad.</div></li>
+        <li><div><b>Tee foto</b>, kui vaja. Foto on tõend, kui numbris tekib hiljem kahtlus.</div></li>
+        <li><div><b>Vajuta</b> <span class="btn p">Salvesta näit</span>.</div></li>
+      </ol>
+    </div>
+    <div class="fig"><div class="shot sm"><img src="s_read.jpg" alt="Näidu sisestus"></div><div class="cap">Roheline: kõik korras</div></div>
+  </div>
+  <div class="row">
+    <div class="fig"><div class="shot sm"><img src="s_warn.jpg" alt="Hoiatus"></div><div class="cap">Kollane: kontrolli numbrit</div></div>
+    <div class="grow">
+      <h3>Kui tuleb kollane hoiatus</h3>
+      <p>Tööriist võrdleb uut näitu eelmisega ja tavapärase tarbimisega. Hoiatus tuleb, kui:</p>
+      <div class="card small">
+        <p>• näit on <b>väiksem</b> kui eelmine;</p>
+        <p>• tarbimine on <b>null</b>;</p>
+        <p>• tarbimine on <b>vähemalt 2 korda suurem</b> kui tavaliselt;</p>
+        <p>• tarbimine on <b>üle 60% väiksem</b> kui tavaliselt.</p>
+      </div>
+      <p>Vaata number üle. Kui see on kindlasti õige, vajuta <span class="btn" style="background:var(--warn-line);border-color:var(--warn-line);color:#1d1300">Näit on õige, salvesta</span>. Hoiatus läheb Excelisse kaasa.</p>
+      <div class="note warn"><b class="t">Mõõdik vahetati või läks nulli?</b><p class="small">Tee linnuke <b>Mõõdik vahetati või läks nulli</b>. Selle näiduga tarbimist ei arvutata ja uus näit on järgmise korra võrdluse alus.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Näiduring · kasutusjuhend</span><span>5</span></div>
+</section>
+
+<!-- 6 Parandamine -->
+<section class="page">
+  <span class="kick">Pärast salvestamist</span>
+  <h2>Järgmine mõõdik, parandamine ja ajalugu</h2>
+  <div class="row">
+    <div class="fig"><div class="shot sm"><img src="s_saved.jpg" alt="Salvestatud"></div></div>
+    <div class="grow">
+      <p>Pärast salvestamist saad valida:</p>
+      <div class="card"><b>Skanni järgmine</b><p class="small">Avab kohe kaamera.</p></div>
+      <div class="card"><b>Järgmine nimekirjas</b><p class="small">Avab järgmise lugemata mõõdiku, kui kleebist pole.</p></div>
+      <div class="card"><b>Tagasi nimekirja</b><p class="small">Ringkäigu avalehele.</p></div>
+      <h3 style="margin-top:8px">Sisestasid vale numbri?</h3>
+      <p>Ava sama mõõdik uuesti ja sisesta õige näit. Ekspordis läheb Excelisse perioodi <b>viimane</b> näit (vt lk 7), nii et vale number sinna ei jõua. Näidu võib üle kirjutada kasvõi iga päev.</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="grow">
+      <h3>Mõõdiku kaart</h3>
+      <p><span class="path">Mõõdikud →</span> vajuta mõõdikul. Kaardil on:</p>
+      <div class="card small">
+        <p>• <b>Sisesta näit</b></p>
+        <p>• <b>Muuda andmeid</b>: nimetus, asukoht, liik, ühik, sagedus</p>
+        <p>• mõõdiku <b>QR-kood</b></p>
+        <p>• <b>Ajalugu</b>: kõik näidud koos tarbimise, lugeja, hoiatuste ja fotodega</p>
+      </div>
+      <p>Vale näidu saab ajaloos kustutada: vajuta <b>Kustuta</b> ja 4 sekundi jooksul uuesti <b>Kinnita</b>. Sama kahekordne vajutus kehtib ka mõõdiku kustutamisel.</p>
+    </div>
+    <div class="fig"><div class="shot sm"><img src="s_history.jpg" alt="Mõõdiku ajalugu"></div></div>
+  </div>
+  <div class="foot"><span>Näiduring · kasutusjuhend</span><span>6</span></div>
+</section>
+
+<!-- 7 Eksport -->
+<section class="page">
+  <span class="kick">Andmed välja</span>
+  <h2>Eksport Excelisse</h2>
+  <div class="row">
+    <div class="grow">
+      <ol class="steps">
+        <li><div>Vajuta all <b>Eksport</b>.</div></li>
+        <li><div>Vali periood: <b>Täna</b>, <b>See kuu</b>, <b>Eelmine kuu</b>, <b>Kõik</b> või <b>Vali ise</b>.</div></li>
+        <li><div>Jäta linnuke <b>Ainult viimane näit perioodi kohta</b> sisse. Kui mõõdikut on samal perioodil loetud mitu korda, ka eri inimeste poolt, läheb Excelisse ainult kõige hilisem.</div></li>
+        <li><div>Vajuta <span class="btn p">Laadi alla Excel</span>. Fail tuleb nimega <span class="mono small">Naidud_Mari_Kask_2026-10-30.xlsx</span>.</div></li>
+        <li><div>Kui näitudel on fotod, vajuta ka <span class="btn">Laadi alla fotod (ZIP)</span>.</div></li>
+      </ol>
+    </div>
+    <div class="fig"><div class="shot sm"><img src="s_export.jpg" alt="Ekspordi vaade"></div></div>
+  </div>
+  <h3>Exceli fail</h3>
+  <p>Failis on kaks lehte: <b>Näidud</b> ja <b>Mõõdikud</b> (kõik mõõdikud koos viimase näiduga). Lehe <b>Näidud</b> veerud on alati samas järjekorras, nii et faili saab kopeerida raamatupidamisse või Power Query abil kokku liita.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Veerg</th><th>Sisu</th><th>Veerg</th><th>Sisu</th></tr></thead>
+    <tbody>
+      <tr><td>Kuupäev, Kellaaeg</td><td>Millal loeti</td><td>Näit</td><td>Sisestatud number</td></tr>
+      <tr><td>Periood</td><td><span class="mono">2026-10</span>, <span class="mono">2026-K4</span>, <span class="mono">2026-N44</span></td><td>Eelmine näit</td><td>Koos kuupäevaga</td></tr>
+      <tr><td>Lugeja</td><td>Kes luges</td><td>Tarbimine</td><td>Näit miinus eelmine</td></tr>
+      <tr><td>Mõõdiku ID</td><td>Tähis</td><td>Mõõdik vahetatud</td><td><i>jah</i>, kui linnuke oli</td></tr>
+      <tr><td>Nimetus, Asukoht</td><td>Mõõdiku andmed</td><td>Hoiatus</td><td>Hoiatuse tekst</td></tr>
+      <tr><td>Liik, Ühik</td><td>Nt Elekter, kWh</td><td>Kommentaar, Foto</td><td>Märkus ja foto failinimi ZIP-is</td></tr>
+    </tbody></table></div>
+  <p class="muted small">Graafikuta mõõdikul on periood kuupäev, nii et sama päeva kordused asenduvad viimasega.</p>
+  <div class="foot"><span>Näiduring · kasutusjuhend</span><span>7</span></div>
+</section>
+
+<!-- 8 Mitu lugejat -->
+<section class="page">
+  <span class="kick">Objektijuhile</span>
+  <h2>Mitu lugejat, üks Excel</h2>
+  <p>Iga telefon hoiab oma andmeid. Lugejate andmed pannakse kokku tööriistas, enne Excelit, <b>varukoopia failidega</b>. Varukoopias on mõõdikud, näidud ja parendusettepanekud. Fotod varukoopiasse ei lähe.</p>
+  <h3>Uue lugeja seadistamine</h3>
+  <div class="flow">
+    <div class="card"><b>Objektijuht</b><p class="small">Registreerib mõõdikud, siis <span class="path">Eksport → Salvesta varukoopia</span> ja saadab faili lugejale e-posti või sõnumiga.</p></div>
+    <div class="arr">→</div>
+    <div class="card"><b>Lugeja</b><p class="small">Avab tööriista, kirjutab oma nime, siis <span class="path">Eksport → Lae varukoopia või teise lugeja fail</span>.</p></div>
+    <div class="arr">→</div>
+    <div class="card"><b>Valmis</b><p class="small">Lugejal on sama mõõdikute nimekiri ja eelmised näidud, nii et hoiatused töötavad kohe.</p></div>
+  </div>
+  <h3>Perioodi lõpus</h3>
+  <div class="flow">
+    <div class="card"><b>Iga lugeja</b><p class="small"><span class="path">Eksport → Salvesta varukoopia</span> ja saadab faili objektijuhile. Fotod saadab eraldi ZIP-failina, kui neid on vaja.</p></div>
+    <div class="arr">→</div>
+    <div class="card"><b>Objektijuht</b><p class="small">Laeb kõik failid ükshaaval sisse. Sama näitu topelt sisse ei võeta. Ringkäigu nimekiri näitab nüüd kogu objekti seisu.</p></div>
+    <div class="arr">→</div>
+    <div class="card"><b>Üks Excel</b><p class="small">Linnukesega <b>Ainult viimane näit perioodi kohta</b> on iga mõõdiku kohta üks rida, ka siis, kui seda luges kaks inimest.</p></div>
+  </div>
+  <div class="note info"><b>Uus mõõdik keset aastat</b><p class="small">Lisa see objektijuhi telefonis ja saada lugejatele uus varukoopia. Laadimisel lisatakse uued mõõdikud ja olemasolevate andmed uuendatakse. Lugejate oma näidud jäävad alles.</p></div>
+  <div class="note warn"><b class="t">Hoia objektijuhi telefonis koopiat</b><p class="small">Salvesta varukoopia regulaarselt ja hoia faili arvutis või pilves. Kui telefon läheb kaotsi, saab andmed uude telefoni tagasi laadida.</p></div>
+  <div class="foot"><span>Näiduring · kasutusjuhend</span><span>8</span></div>
+</section>
+
+<!-- 9 Seaded, KKK -->
+<section class="page">
+  <span class="kick">Seaded ja abi</span>
+  <h2>Seaded, ettepanekud ja küsimused</h2>
+  <div class="row">
+    <div class="grow">
+      <div class="card"><b>Teksti suurus</b><p class="small"><b>Suur</b> või <b>Väga suur</b>. Kehtib kogu tööriistas.</p></div>
+      <div class="card"><b>Mõõdikute liigid</b><p class="small">Lisa oma liik ja ühik, näiteks <i>Suruõhk, Nm³</i>.</p></div>
+      <div class="card"><b>Parendusettepanekud</b><p class="small">Kas midagi segab või on puudu? <span class="path">Seaded → Ava ettepanekud</span>, vali <b>Ettepanek</b>, <b>Viga</b> või <b>Küsimus</b> ja kirjuta. Kõik ettepanekud saab korraga Excelisse eksportida või tekstina kopeerida. Need liiguvad ka varukoopiaga objektijuhile.</p></div>
+      <div class="card"><b>Kustuta kõik andmed</b><p class="small">Seadete all. Vajuta kaks korda. Tee enne varukoopia.</p></div>
+    </div>
+    <div class="fig"><div class="shot sm"><img src="s_ideas.jpg" alt="Parendusettepanekud"></div></div>
+  </div>
+  <div class="faq">
+    <div><b>Kas internetti on vaja?</b><p>Tööriista avamiseks jah. Kui see on avatud, töötavad sisestamine ja eksport ka keldris ilma levita. Ära värskenda lehte seal, kus levi pole.</p></div>
+    <div><b>Kaamera ei avane</b><p>Luba kaamera telefoni seadetes brauserile või kirjuta mõõdiku tähis skanneri all olevasse lahtrisse.</p></div>
+    <div><b>Kus andmed on?</b><p>Ainult sinu telefoni brauseris. Silent Tools ei näe neid.</p></div>
+    <div><b>Vajad abi?</b><p>Pöördu oma objektijuhi poole. Kirjuta küsimus ka parendusettepanekutesse, et see jõuaks arendajani.</p></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="terms">
+    <h3>Tingimused lühidalt</h3>
+    <p>Näiduring on litsentsitud tellinud ettevõttele kasutamiseks tema enda objektidel, kõigil tema töötajate seadmetel. Tellimust ega aegumiskuupäeva pole. Hoolitsen tööriista eest aktiivselt vähemalt 12 kuud ja tavaliselt kauem: veaparandused, uuendused uutele telefonidele ja brauseritele ning vastused küsimustele. Uuendused on tasuta ja link avab alati uusima versiooni.</p>
+    <p>Tööriist on antud sellisena, nagu see on. Kõik sisestatu jääb kasutaja seadmesse, seega tee varukoopiaid. Koodi ei jagata ega anta edasi kolmandatele isikutele. Täielikud tingimused ja privaatsus (inglise keeles): <span class="url">silent-tools.github.io/terms.html</span></p>
+  </div>
+  <div class="foot"><span>Näiduring · Silent Tools</span><span>9</span></div>
+</section>
+
+</div>
+</body>
+</html>
