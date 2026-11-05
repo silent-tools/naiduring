@@ -240,8 +240,8 @@ const TYPES_DEFAULT = [
   {key:"muu",     name:"Muu",     unit:"",    color:"#6B5FA8"}
 ];
 const EXTRA_COLORS = ["#8C6D1F","#5A7D2B","#A04A7A","#3E6E8C","#7A5236","#4B4FA8"];
-const FREQ = {month:"Igakuine", quarter:"Kvartaalne", week:"Iganädalane", year:"Aastane", none:"Graafikuta"};
-const FREQ_SHORT = {month:"kuu", quarter:"kvartal", week:"nädal", year:"aasta"};
+const FREQ = {day:"Igapäevane", week:"Iganädalane", month:"Igakuine", quarter:"Kvartaalne", year:"Aastane", none:"Graafikuta"};
+const FREQ_SHORT = {day:"täna", week:"nädal", month:"kuu", quarter:"kvartal", year:"aasta"};
 
 /* ---------- andmebaas (IndexedDB, andmed jäävad seadmesse) ---------- */
 const DB = {
@@ -293,6 +293,7 @@ function isoWeek(d){ const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), 
   t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
   return t.getUTCFullYear() + "-N" + pad(Math.ceil(((t - y0) / 864e5 + 1) / 7)); }
 function periodKey(d, f){ d = new Date(d); const y = d.getFullYear(), m = d.getMonth();
+  if (f === "day") return isoDay(d);
   if (f === "month") return `${y}-${pad(m+1)}`;
   if (f === "quarter") return `${y}-K${Math.floor(m/3)+1}`;
   if (f === "year") return `${y}`;
@@ -847,7 +848,7 @@ function vSettings(){
     <div class="card"><h3>Kasutusjuhend</h3>
       <a class="btn quiet" href="juhend.html">Ava kasutusjuhend</a>
       <a class="btn quiet" href="juhend.pdf">Juhend PDF-ina</a>
-      <p class="muted small" style="margin:0">Näiduring 1.1.0 · Silent Tools</p></div>
+      <p class="muted small" style="margin:0">Näiduring 1.2.0 · Silent Tools</p></div>
     <div class="card"><h3>Parendusettepanekud</h3>
       <p style="margin:0" class="small">Kas midagi segab või on puudu? Kirjuta see üles.${S.ideas.length ? ` Salvestatud: <b>${S.ideas.length}</b>.` : ""}</p>
       <button class="btn" data-act="ideas">Ava ettepanekud</button></div>
